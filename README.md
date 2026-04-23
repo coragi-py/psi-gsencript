@@ -17,6 +17,17 @@ Este sistema funciona como um cofre de senhas (Vault) que prioriza os pilares da
 ## Instalação e Configuração
 Para rodar o projeto em seu ambiente local (Windows 10):
 
+**Observação**: Para a correta execução das políticas de segurança e criptografia, o arquivo .env deve ser configurado na raiz do projeto seguindo o modelo abaixo:
+# Django Settings
+SECRET_KEY=sua_chave_secreta_django
+DEBUG=True
+
+# Criptografia AES-256 (Gere uma chave válida usando: cryptography.fernet.Fernet.generate_key())
+ENCRYPTION_KEY=sua_chave_fernet_32_bytes_base64
+
+# Database
+DATABASE_URL=sqlite:///db.sqlite3
+
 1.  **Clone o projeto:**
     ```bash
     git clone https://github.com/coragi-py/psi-gsencript.git
