@@ -139,10 +139,10 @@ AXES_COOLOFF_TIME = 0.25 # 15 minutos (em horas)
 AXES_LOCK_OUT_AT_FAILURE_LIMIT = True
 
 # Configurações de segurança de transporte
-SECURE_SSL_REDIRECT = True
+SECURE_SSL_REDIRECT = False # Em produção, deve ser True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = False # Em produção, deve ser True
+CSRF_COOKIE_SECURE = False # Em produção, deve ser True
 SECURE_HSTS_SECONDS = 31536000 # Ativa HSTS (1 ano)
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
