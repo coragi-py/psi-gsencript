@@ -21,7 +21,7 @@ O sistema implementa nativamente os direitos do titular:
 
 ## Tecnologias Utilizadas
 
-* **Backend:** Python 3.14+ / Django 5.x
+* **Backend:** Python 3.14+ / Django 6.0.4
 * **Banco de Dados:** SQLite (Desenvolvimento) / PostgreSQL (Suportado)
 * **Criptografia:** Cryptography (Fernet/AES)
 * **Ambiente:** Windows 10/11 64bits
