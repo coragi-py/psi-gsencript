@@ -1,81 +1,84 @@
-# GSencript - Gerenciador de Senhas Seguro
+# GSencript - Gerenciador de Credenciais & Políticas de Segurança
 
-Este projeto é um **Gerenciador de Senhas (Vault)** desenvolvido em Django, focado em segurança ofensiva, criptografia robusta e conformidade com a **Lei Geral de Proteção de Dados (LGPD)**. Desenvolvido como parte do projeto de Engenharia de Software.
+O **GSencript** é um projeto acadêmico desenvolvido para a disciplina de **Políticas de Segurança da Informação (Projeto Integrador)** na **Universidade de Mogi das Cruzes (UMC)**. O objetivo central é a aplicação prática de diretrizes de segurança, controle de acesso e conformidade legal em um ambiente de software.
 
-## Diferenciais de Segurança
-
-O sistema foi construído seguindo recomendações da **RFC 9106** e **OWASP**, implementando:
-
-* **Autenticação Primária:** Utilização do algoritmo **Argon2** para o hashing de senhas (superior ao PBKDF2).
-* **MFA (Multi-Fator):** Autenticação em duas etapas via **TOTP** (Time-based One-Time Password) com a biblioteca `pyotp`.
-* **Criptografia em Repouso:** Senhas de terceiros são armazenadas no banco de dados utilizando criptografia simétrica **AES (Fernet)**.
-* **Proteção de Força Bruta:** Integração com `django-axes` para bloqueio de tentativas sucessivas de login.
-* **Trilha de Auditoria:** Registro de eventos críticos (logins, alterações de senha, acessos ao cofre).
-
-## Conformidade LGPD
-
-O sistema implementa nativamente os direitos do titular:
-* **Gestão de Consentimento:** Registro explícito e possibilidade de revogação de acesso.
-* **Portabilidade:** Exportação de dados do usuário em formato JSON.
-* **Direito ao Esquecimento:** Exclusão permanente de conta e dados vinculados.
+## Resumo
+Este sistema funciona como um cofre de senhas (Vault) que prioriza os pilares da Segurança da Informação: **Confidencialidade, Integridade e Disponibilidade**. Mais do que um simples armazenamento, o projeto implementa controles técnicos rigorosos para mitigar riscos de vazamento de dados e garantir a privacidade do usuário final, alinhando o desenvolvimento de software às exigências da **LGPD (Lei Geral de Proteção de Dados)**.
 
 ## Tecnologias Utilizadas
+* **Backend:** Python 3.14 / Django 6.0.4
+* **Segurança e Criptografia:**
+    * **Argon2:** Algoritmo de hashing de última geração para senhas de sistema.
+    * **AES-256 (Fernet):** Criptografia simétrica de nível militar para proteção das credenciais em repouso.
+    * **MFA (TOTP):** Autenticação de dois fatores implementada com `PyOTP`.
+* **Frontend:** Interface responsiva construída com Tailwind CSS e integração via Fetch API.
+* **Banco de Dados:** SQLite (persistência de dados criptografados).
 
-* **Backend:** Python 3.14+ / Django 6.0.4
-* **Banco de Dados:** SQLite (Desenvolvimento) / PostgreSQL (Suportado)
-* **Criptografia:** Cryptography (Fernet/AES)
-* **Ambiente:** Windows 10/11 64bits
+## Instalação e Configuração
+Para rodar o projeto em seu ambiente local (Windows 10):
+
+1.  **Clone o projeto:**
+    ```bash
+    git clone https://github.com/coragi-py/psi-gsencript.git
+    cd psi-gsencript
+    ```
+
+2.  **Prepare o ambiente (Virtualenv):**
+    ```bash
+    python -m venv venv
+    .\venv\Scripts\activate
+    ```
+
+3.  **Instale os requisitos:**
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+4.  **Sincronize o Banco de Dados:**
+    ```bash
+    python manage.py makemigrations
+    python manage.py migrate
+    ```
+
+5.  **Inicie a aplicação:**
+    ```bash
+    python manage.py runserver
+    ```
+
+## Políticas Implementadas
+Este projeto materializa as seguintes políticas de segurança:
+* **Controle de Acesso Lógico:** Implementação de MFA para prevenir acessos não autorizados mesmo em caso de comprometimento da senha principal.
+* **Criptografia em Repouso:** Garantia de que dados sensíveis nunca sejam armazenados em texto claro (Plain Text).
+* **Privacy by Design (LGPD):** Ferramentas nativas para o exercício dos direitos do titular, como portabilidade (exportação) e direito ao esquecimento (exclusão).
+* **Gestão de Consentimento:** Controle rigoroso de processamento de dados baseado no aceite explícito do usuário.
+
+## Mapeamento da API (Rotas para Teste)
+
+### Gestão de Identidade (`/accounts/` & `/auth/`)
+| Método | Endpoint | Descrição |
+| :--- | :--- | :--- |
+| `POST` | `/accounts/registrar/` | Cadastro de usuário com aceite de LGPD e retorno de Segredo 2FA. |
+| `POST` | `/auth/login/` | Autenticação com verificação de credenciais e token TOTP. |
+| `POST` | `/auth/logout/` | Encerramento seguro da sessão. |
+
+### Cofre de Credenciais (`/vault/`)
+| Método | Endpoint | Descrição |
+| :--- | :--- | :--- |
+| `POST` | `/vault/adicionar/` | Criptografa (AES-256) e armazena uma nova senha. |
+| `GET` | `/vault/listar/` | Recupera as senhas (decifradas) para o usuário autenticado. |
+| `POST` | `/vault/excluir/<id>/` | Remoção definitiva de uma credencial específica. |
+
+### Direitos do Titular - LGPD (`/lgpd/`)
+| Método | Endpoint | Descrição |
+| :--- | :--- | :--- |
+| `GET` | `/lgpd/exportar/` | **Portabilidade:** Gera JSON com todos os dados pessoais e do cofre. |
+| `POST` | `/lgpd/revogar/` | Revogação de consentimento e bloqueio imediato do acesso. |
+| `POST` | `/lgpd/excluir/` | **Direito ao Esquecimento:** Exclusão total e irreversível da conta. |
 
 ---
-
-## 🛠️ Como Instalar e Rodar
-
-### 1. Clonar o repositório e entrar na pasta
-```bash
-git clone https://github.com/SEU_USUARIO/gsencript_django.git
-cd gsencript_django
-```
-
-### 2. Configurar o Ambiente Virtual
-```bash
-python -m venv venv
-venv\Scripts\activate
-```
-
-### 3. Instalar Dependências
-```bash
-pip install -r requirements.txt
-```
-
-### 4. Configurar Variáveis de Ambiente
-Crie um arquivo `.env` baseado no `.env.example`:
-```bash
-cp .env.example .env
-# Edite o .env com sua SECRET_KEY e configurações locais
-```
-
-### 5. Migrações e Superusuário
-```bash
-python manage.py migrate
-python manage.py createsuperuser
-```
-
-### 6. Executar o Servidor
-```bash
-python manage.py runserver
-```
-
----
-
-## 📂 Estrutura de Apps
-
-* `/accounts`: Gerenciamento de usuários e modelos customizados.
-* `/authentication`: Lógica de login, logout e verificação 2FA.
-* `/vault`: Armazenamento, cifragem e decifragem de credenciais.
-* `/lgpd`: Controle de consentimento e portabilidade de dados.
-* `/recovery`: Fluxo de recuperação de conta via tokens seguros.
-* `/audit`: Sistema de logs e monitoramento de sinais.
-
-## 📝 Licença
-
-Este projeto foi desenvolvido para fins acadêmicos.
+**Alunos:** 
+  Anny Gabriely Souza do Nascimento
+  Antonio Luiz Lins Neto
+  Fábio Yuuki Saruwataru  
+**Disciplina:** Políticas de Segurança da Informação  
+**Instituição:** UMC - Universidade de Mogi das Cruzes
