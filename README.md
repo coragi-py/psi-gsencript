@@ -17,7 +17,11 @@ Este sistema funciona como um cofre de senhas (Vault) que prioriza os pilares da
 ## Instalação e Configuração
 Para rodar o projeto em seu ambiente local (Windows 10):
 
-**Observação**: Para a correta execução das políticas de segurança e criptografia, o arquivo .env deve ser configurado na raiz do projeto seguindo o modelo abaixo:
+## 🔑 Variáveis de Ambiente (.env.example)
+
+Para a correta execução das políticas de segurança e criptografia, o arquivo `.env` deve ser configurado na raiz do projeto seguindo o modelo abaixo:
+
+```text
 # Django Settings
 SECRET_KEY=sua_chave_secreta_django
 DEBUG=True
@@ -27,6 +31,7 @@ ENCRYPTION_KEY=sua_chave_fernet_32_bytes_base64
 
 # Database
 DATABASE_URL=sqlite:///db.sqlite3
+```
 
 1.  **Clone o projeto:**
     ```bash
@@ -87,6 +92,71 @@ Este projeto materializa as seguintes políticas de segurança:
 | `POST` | `/lgpd/excluir/` | **Direito ao Esquecimento:** Exclusão total e irreversível da conta. |
 
 ---
+
+## 📡 Documentação de Payloads (JSON)
+
+Abaixo estão os modelos de dados para as operações de criação (Create) e alteração (Alter) via API.
+
+### 1. Operações de Criação (Create)
+
+**Registrar Novo Usuário**
+* **Endpoint:** `POST /accounts/registrar/`
+```json
+{
+  "username": "usuario_exemplo",
+  "email": "exemplo@dominio.com",
+  "senha": "SenhaForte@123",
+  "consentimento_lgpd": true
+}
+```
+
+**Adicionar Credencial ao Cofre**
+* **Endpoint:** `POST /vault/adicionar/`
+```json
+{
+  "titulo": "Nome do Site/Serviço",
+  "url": "https://www.exemplo.com",
+  "username": "meu_usuario",
+  "senha": "senha_que_sera_criptografada"
+}
+```
+
+### 2. Operações de Alteração (Alter)
+
+**Redefinição de Senha (Recovery)**
+* **Endpoint:** `POST /recovery/resetar/`
+```json
+{
+  "token": "codigo_recebido_por_email",
+  "nova_senha": "Nova@SenhaForte2026"
+}
+```
+
+**Atualizar Credencial Existente**
+* **Endpoint:** `POST /vault/atualizar/<id>/`
+```json
+{
+  "titulo": "Nome Atualizado",
+  "url": "https://nova-url.com",
+  "username": "novo_usuario",
+  "senha": "nova_senha_criptografada"
+}
+```
+
+### 3. Autenticação e Acesso
+
+**Login com MFA**
+* **Endpoint:** `POST /auth/login/`
+```json
+{
+  "username": "usuario_exemplo",
+  "password": "SenhaForte@123",
+  "token_2fa": "123456"
+}
+```
+
+---
+
 **Alunos:** 
   Anny Gabriely Souza do Nascimento
   Antonio Luiz Lins Neto
