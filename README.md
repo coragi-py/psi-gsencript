@@ -157,9 +157,9 @@ Abaixo estão os modelos de dados para as operações de criação (Create) e al
 
 ---
 
-**Alunos:** 
+**Alunos:** \
   Anny Gabriely Souza do Nascimento\
   Antonio Luiz Lins Neto\
   Fábio Yuuki Saruwataru\ 
-**Disciplina:** Políticas de Segurança da Informação  
+\ **Disciplina:** Políticas de Segurança da Informação  
 **Instituição:** UMC - Universidade de Mogi das Cruzes
