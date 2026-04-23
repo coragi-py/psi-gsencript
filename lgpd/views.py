@@ -7,6 +7,7 @@ from vault.models import CredencialCofre
 from django.contrib.auth import logout
 from django.views.decorators.csrf import csrf_exempt
 
+@csrf_exempt
 @login_required
 def revogar_consentimento(request):
     try:
@@ -91,7 +92,7 @@ def exportar_meus_dados(request):
             "url": item.url_site,
             "username": item.username_site,
             # A senha é exportada CRIPTOGRAFADA. O texto claro nunca sai do banco para o JSON.
-            "senha_cifrada": item.senha_site
+            "senha_cifrada": item.senha_site_cifrada
         })
 
     # 4. Estrutura Final do Arquivo
@@ -115,15 +116,21 @@ def exportar_meus_dados(request):
 @login_required
 def excluir_minha_conta(request):
     if request.method == 'POST':
+        # Recebe o objeto do usuário logado antes de deslogar, para garantir que temos acesso a ele mesmo após o logout.
         user = request.user
         
-        user.delete()
-        
-        # Desloga o usuário da sessão atual após a exclusão da conta
-        logout(request)
-        
-        return JsonResponse({
-            "mensagem": "Sua conta e todos os seus dados pessoais foram excluídos permanentemente."
-        }, status=200)
-        
-    return JsonResponse({"erro": "Método não permitido. Utilize POST para confirmar a exclusão."}, status=405)
+        try:
+            # Faz o logout antes de excluir a conta
+            logout(request)
+            
+            # Delete do usuario
+            user.delete()
+            
+            return JsonResponse({
+                "mensagem": "Sua conta e todos os seus dados foram apagados conforme a LGPD. (Direito do esquecimento)"
+            }, status=200)
+            
+        except Exception as e:
+            return JsonResponse({"erro": f"Erro ao processar exclusão: {str(e)}"}, status=500)
+            
+    return JsonResponse({"erro": "Método não permitido. Utilize POST."}, status=405)

@@ -22,4 +22,6 @@ urlpatterns = [
     path('recovery/', include('recovery.urls')),
     path('accounts/', include('accounts.urls')),
     path('auth/', include('authentication.urls')),
+    path('vault/', include('vault.urls')),
+    path('lgpd/', include('lgpd.urls')),
 ]
