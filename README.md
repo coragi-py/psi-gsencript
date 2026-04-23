@@ -38,8 +38,8 @@ cd gsencript_django
 
 ### 2. Configurar o Ambiente Virtual
 ```bash
-python3 -m venv venv
-source venv/bin/activate
+python -m venv venv
+venv\Scripts\activate
 ```
 
 ### 3. Instalar Dependências
