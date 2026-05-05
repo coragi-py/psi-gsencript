@@ -30,10 +30,6 @@ class AuditLog(models.Model):
     class Meta:
         ordering = ['-timestamp']
 
-    # =========================================================
-    # ITEM 5.3: PROTEÇÃO CONTRA ALTERAÇÃO E EXCLUSÃO DE LOGS
-    # =========================================================
-
     def save(self, *args, **kwargs):
         """Impede o UPDATE de registros existentes (WORM)."""
         if self.pk is not None:

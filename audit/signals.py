@@ -58,7 +58,7 @@ def log_logout(sender, request, user, **kwargs):
             detalhes="Sessão encerrada voluntariamente pelo usuário."
         )
 
-''' Alterações no vault '''
+# Alterações no vault
 
 @receiver(post_save, sender='vault.CredencialCofre')
 def log_cofre_salvar(sender, instance, created, **kwargs):

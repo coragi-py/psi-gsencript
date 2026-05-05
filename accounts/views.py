@@ -8,7 +8,7 @@ from .models import User
 from lgpd.models import ConsentimentoLGPD
 
 def validar_senha_forte(senha):
-    # Regra de complexidade
+    # Regra de complexidade da senha
     if len(senha) < 8:
         return False, "A senha deve ter no mínimo 8 caracteres."
     if not re.search(r"[A-Z]", senha) or not re.search(r"[a-z]", senha):
@@ -27,7 +27,7 @@ def registrar_usuario(request):
             senha = data.get('senha')
             consentimento_recebido = data.get('consentimento_lgpd')
 
-            # Item 4.4: Validação de LGPD
+            # Validação de LGPD
             if not consentimento_recebido:
                 return JsonResponse({"erro": "O consentimento da LGPD é obrigatório."}, status=400)
 
