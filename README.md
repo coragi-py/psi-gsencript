@@ -1,7 +1,25 @@
 # GSencript - Gerenciador de Credenciais & Políticas de Segurança
 
-O **GSencript** é um projeto acadêmico desenvolvido para a disciplina de **Políticas de Segurança da Informação (Projeto Integrador)** na **Universidade de Mogi das Cruzes (UMC)**. O objetivo central é a aplicação prática de diretrizes de segurança, controle de acesso e conformidade legal em um ambiente de software.
+<!-- Institutional Badges -->
+[![Universidade: UMC](https://img.shields.io/badge/University-UMC-0D47A1.svg)](https://www.umc.br/)
+[![Matéria: PSI](https://img.shields.io/badge/Subject-Pol%C3%ADticas_de_Seguran%C3%A7a-7B1FA2.svg)](https://github.com/coragi-py/psi-gsencript/main)
 
+<!-- Method Badges -->
+[![Criptografia: AES256](https://img.shields.io/badge/Encryption-AES--256-orange.svg)](https://github.com/coragi-py/psi-gsencript/main)
+[![Compliance: LGPD](https://img.shields.io/badge/Compliance-LGPD-blue.svg)](https://www.gov.br/esporte/pt-br/acesso-a-informacao/lgpd)
+[![Hashing: Argon2](https://img.shields.io/badge/Hashing-Argon2-red.svg)](https://github.com/coragi-py/psi-gsencript/main)
+[![Autenticação: MFA-TOTP](https://img.shields.io/badge/MFA-TOTP-yellow.svg)](https://github.com/coragi-py/psi-gsencript/main)
+
+<!-- Tech Badges -->
+[![Python 3.14](https://img.shields.io/badge/python-3.14%2B-blue.svg)](https://www.python.org/)
+[![Django 6.0.4](https://img.shields.io/badge/django-6.0.4%2B-092e20.svg)](https://www.djangoproject.com/)
+
+<!-- Licencing -->
+[![MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/coragi-py/psi-gsencript/main)
+
+---
+
+O **GSencript** é um projeto acadêmico desenvolvido para a disciplina de **Políticas de Segurança da Informação (Projeto Integrador)** na **Universidade de Mogi das Cruzes (UMC)**. O objetivo central é a aplicação prática de diretrizes de segurança, controle de acesso e conformidade legal em um ambiente de software.
 ## Resumo
 Este sistema funciona como um cofre de senhas (Vault) que prioriza os pilares da Segurança da Informação: **Confidencialidade, Integridade e Disponibilidade**. Mais do que um simples armazenamento, o projeto implementa controles técnicos rigorosos para mitigar riscos de vazamento de dados e garantir a privacidade do usuário final, alinhando o desenvolvimento de software às exigências da **LGPD (Lei Geral de Proteção de Dados)**.
 
@@ -13,6 +31,20 @@ Este sistema funciona como um cofre de senhas (Vault) que prioriza os pilares da
     * **MFA (TOTP):** Autenticação de dois fatores implementada com `PyOTP`.
 * **Frontend:** Interface responsiva construída com Tailwind CSS e integração via Fetch API.
 * **Banco de Dados:** SQLite (persistência de dados criptografados).
+
+📂 Estrutura do Projeto
+
+```text
+.
+├── core/                # Configurações do Django (settings.py, urls.py)
+├── accounts/            # Auth, Hashing (Argon2) e MFA (TOTP)
+├── vault/               # Lógica do Cofre e Criptografia AES-256 (Fernet)
+├── lgpd/                # Gestão de Consentimento e Portabilidade de Dados
+├── static/              # CSS (Tailwind) e JavaScript (Fetch API)
+├── templates/           # Páginas HTML (Login, Cadastro, Dashboard)
+├── .env.example         # Template para variáveis de ambiente
+└── manage.py            # CLI do Django
+```
 
 ## Instalação e Configuração
 Para rodar o projeto em seu ambiente local (Windows 10):
@@ -158,8 +190,12 @@ Abaixo estão os modelos de dados para as operações de criação (Create) e al
 ---
 
 **Alunos:** \
-  Anny Gabriely Souza do Nascimento\
-  Antonio Luiz Lins Neto\
-  Fábio Yuuki Saruwataru \
-**Disciplina:** Políticas de Segurança da Informação  
-**Instituição:** UMC - Universidade de Mogi das Cruzes
+&emsp;Anny Gabriely Souza do Nascimento\
+&emsp;Antonio Luiz Lins Neto\
+&emsp;Fábio Yuuki Saruwataru \
+**Docente responsável:** \
+&emsp;Prof. Dr. Fabiano Bezerra Menegidio \
+**Disciplina:** \
+&emsp;Políticas de Segurança da Informação  
+**Instituição:** \
+&emsp;UMC - Universidade de Mogi das Cruzes
