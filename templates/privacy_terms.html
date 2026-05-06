@@ -1,45 +1,144 @@
 {% extends 'base.html' %} {% block content %}
-<div class="auth-container" style="max-width: 800px; text-align: left">
-  <h2>TERMOS DE PRIVACIDADE E USO</h2>
+<style>
+  .terms-content h3 {
+    color: var(--accent);
+    margin-top: 25px;
+    margin-bottom: 10px;
+    font-family: var(--font-mono);
+    border-left: 3px solid var(--accent);
+    padding-left: 10px;
+    font-size: 1.1rem;
+  }
+  .terms-content h4 {
+    color: var(--text-main);
+    margin-top: 15px;
+    font-size: 0.95rem;
+  }
+  .terms-content p,
+  .terms-content li {
+    line-height: 1.6;
+    margin-bottom: 10px;
+  }
+  .terms-content ul {
+    margin-left: 20px;
+    margin-bottom: 15px;
+  }
+  .highlight {
+    color: var(--accent);
+    font-weight: bold;
+  }
+</style>
+
+<div
+  class="auth-container"
+  style="max-width: 850px; text-align: left; margin-bottom: 50px"
+>
+  <h2
+    style="
+      font-family: var(--font-mono);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+    "
+  >
+    TERMOS DE USO E POLÍTICA DE PRIVACIDADE
+  </h2>
+
   <div
     class="terms-content"
     style="
-      height: 400px;
+      height: 500px;
       overflow-y: scroll;
-      padding: 20px;
-      background: var(--bg-dark);
+      padding: 30px;
+      background: rgba(0, 0, 0, 0.4);
       border: 1px solid var(--border);
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       color: var(--text-dim);
+      scrollbar-width: thin;
+      scrollbar-color: var(--accent) var(--bg-dark);
     "
   >
-    <h3>1. Coleta de Dados</h3>
+    <h3>1. TERMOS DE USO</h3>
     <p>
-      Coletamos seu Nome, E-mail e Hash de Senha para fins de autenticação e
-      segurança da conta.
+      Ao utilizar o <span class="highlight">GSencript</span>, você concorda com
+      as condições estabelecidas neste protocolo de segurança digital.
     </p>
 
-    <h3>2. Finalidade</h3>
+    <h4>1.1. Arquitetura de Conhecimento Zero (Zero-Knowledge)</h4>
     <p>
-      Os dados são utilizados exclusivamente para permitir o acesso ao cofre de
-      senhas e para auditoria de segurança (logs de acesso).
+      O GSencript opera sob uma arquitetura onde
+      <span class="highlight"
+        >apenas o usuário possui a chave de descriptografia</span
+      >
+      dos seus dados. O sistema utiliza criptografia em repouso com o algoritmo
+      AES-256 e derivação de chaves via PBKDF2/Argon2.
     </p>
 
-    <h3>3. Criptografia</h3>
+    <h4>1.2. Recuperação de senha</h4>
     <p>
-      Suas senhas armazenadas no cofre são cifradas com AES-256 antes de serem
-      salvas. O GSencript não possui acesso à sua senha mestra.
+      O GSencript oferece um protocolo de recuperação de senha via token de
+      segurança enviado ao e-mail cadastrado. O token possui validade de 10
+      minutos. O usuário é responsável por manter o acesso ao seu e-mail seguro.
     </p>
 
-    <h3>4. Retenção</h3>
+    <h3>2. POLÍTICA DE PRIVACIDADE (LGPD)</h3>
     <p>
-      Os dados serão mantidos enquanto a conta estiver ativa. Em caso de
-      exclusão, todos os registros associados serão removidos permanentemente em
-      até 30 dias.
+      Em conformidade com a Lei nº 13.709/2018, detalhamos o tratamento dos seus
+      dados pessoais.
+    </p>
+
+    <h4>2.1. Dados Coletados e Finalidade</h4>
+    <ul>
+      <li>
+        <strong>Nome Completo:</strong> Identificação civil do titular da conta.
+      </li>
+      <li>
+        <strong>E-mail:</strong> Identificador único e canal de alertas de
+        segurança.
+      </li>
+      <li>
+        <strong>Hash de Autenticação:</strong> Validação de acesso sem
+        armazenamento da senha real.
+      </li>
+      <li>
+        <strong>Segredo TOTP:</strong> Geração do segundo fator de autenticação
+        (MFA).
+      </li>
+      <li>
+        <strong>Logs de Auditoria:</strong> Registro de data, hora e IP de
+        acesso conforme o Marco Civil da Internet.
+      </li>
+    </ul>
+
+    <h4>2.2. Direitos do Titular</h4>
+    <p>
+      Você possui o direito de acessar, corrigir ou solicitar a exclusão de seus
+      dados a qualquer momento. A revogação do consentimento LGPD implicará no
+      bloqueio imediato das funções de edição e visualização do cofre.
+    </p>
+
+    <h3>3. SEGURANÇA E CRIPTOGRAFIA</h3>
+    <p>
+      O GSencript implementa proteção contra ataques de IDOR (Insecure Direct
+      Object Reference) e criptografia ponta-a-ponta no armazenamento. Seus
+      dados são cifrados localmente antes da persistência no banco de dados.
+    </p>
+
+    <h3>4. RETENÇÃO E EXCLUSÃO</h3>
+    <p>
+      Os dados são mantidos enquanto a conta estiver ativa. Ao solicitar a
+      exclusão, os dados pessoais serão removidos em até 30 dias, permanecendo
+      apenas os registros exigidos por lei.
     </p>
   </div>
-  <div style="margin-top: 20px">
-    <a href="{% url 'registrar' %}" class="btn-primary">VOLTAR AO CADASTRO</a>
+
+  <div style="margin-top: 30px; display: flex; gap: 15px">
+    <a
+      href="javascript:history.back()"
+      class="btn-primary"
+      style="background: transparent; border: 1px solid var(--border)"
+      >VOLTAR</a
+    >
+    <a href="{% url 'registrar' %}" class="btn-primary">IR PARA CADASTRO</a>
   </div>
 </div>
 {% endblock %}

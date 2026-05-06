@@ -1,5 +1,7 @@
+from urllib import request
+
 from django.utils import timezone
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from accounts.models import User
@@ -9,6 +11,9 @@ import json
 
 @csrf_exempt
 def solicitar_recuperacao(request):
+    if request.method == 'GET':
+        return render(request, 'recovery/solicitar.html')
+    
     # Item 2.1 e 2.2: Solicitação e geração de token seguro
     if request.method == 'POST':
         data = json.loads(request.body)
@@ -37,6 +42,9 @@ def solicitar_recuperacao(request):
 
 @csrf_exempt
 def resetar_senha(request):
+
+    if request.method == 'GET':
+        return render(request, 'recovery/resetar.html')
     # Item 2.4 e 2.5: Validação de token e alteração da senha
     if request.method == 'POST':
         data = json.loads(request.body)

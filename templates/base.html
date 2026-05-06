@@ -94,5 +94,40 @@
     {% block scripts %}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     {% endblock %}
+
+    <footer
+      style="
+        margin-top: 50px;
+        padding: 20px 0;
+        border-top: 1px solid var(--border);
+        text-align: center;
+      "
+    >
+      <div class="container">
+        <p
+          style="
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.4;
+          "
+        >
+          <i
+            class="fas fa-exclamation-triangle"
+            style="color: var(--accent); margin-right: 5px"
+          ></i>
+          Este site é um
+          <span style="color: var(--text-main)"
+            >projeto experimental para fins didáticos</span
+          >. Não utilize para armazenar senhas de uso crítico em produção sem
+          uma auditoria completa de segurança.
+          <br />
+          <span style="font-family: var(--font-mono)"
+            >GSencript &copy; 2026 | Engenharia de Software UMC</span
+          >
+        </p>
+      </div>
+    </footer>
   </body>
 </html>
