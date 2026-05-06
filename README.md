@@ -1,201 +1,112 @@
 # GSencript - Gerenciador de Credenciais & Políticas de Segurança
 
-<!-- Institutional Badges -->
 [![Universidade: UMC](https://img.shields.io/badge/University-UMC-0D47A1.svg)](https://www.umc.br/)
-[![Matéria: PSI](https://img.shields.io/badge/Subject-Pol%C3%ADticas_de_Seguran%C3%A7a-7B1FA2.svg)](https://github.com/coragi-py/psi-gsencript/main)
+[![Matéria: PSI](https://img.shields.io/badge/Subject-Pol%C3%ADticas_de_Seguran%C3%A7a-7B1FA2.svg)](https://github.com/coragi-py/psi-gsencript)
 
-<!-- Method Badges -->
-[![Criptografia: AES256](https://img.shields.io/badge/Encryption-AES--256-orange.svg)](https://github.com/coragi-py/psi-gsencript/main)
+[![Criptografia: AES256](https://img.shields.io/badge/Encryption-AES--256-orange.svg)](https://github.com/coragi-py/psi-gsencript)
 [![Compliance: LGPD](https://img.shields.io/badge/Compliance-LGPD-blue.svg)](https://www.gov.br/esporte/pt-br/acesso-a-informacao/lgpd)
-[![Hashing: Argon2](https://img.shields.io/badge/Hashing-Argon2-red.svg)](https://github.com/coragi-py/psi-gsencript/main)
-[![Autenticação: MFA-TOTP](https://img.shields.io/badge/MFA-TOTP-yellow.svg)](https://github.com/coragi-py/psi-gsencript/main)
+[![Hashing: Argon2](https://img.shields.io/badge/Hashing-Argon2-red.svg)](https://github.com/coragi-py/psi-gsencript)
+[![Autenticação: MFA-TOTP](https://img.shields.io/badge/MFA-TOTP-yellow.svg)](https://github.com/coragi-py/psi-gsencript)
 
-<!-- Tech Badges -->
 [![Python 3.14](https://img.shields.io/badge/python-3.14%2B-blue.svg)](https://www.python.org/)
 [![Django 6.0.4](https://img.shields.io/badge/django-6.0.4%2B-092e20.svg)](https://www.djangoproject.com/)
 
-<!-- Licencing -->
-[![MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/coragi-py/psi-gsencript/main)
-
 ---
 
-O **GSencript** é um projeto acadêmico desenvolvido para a disciplina de **Políticas de Segurança da Informação (Projeto Integrador)** na **Universidade de Mogi das Cruzes (UMC)**. O objetivo central é a aplicação prática de diretrizes de segurança, controle de acesso e conformidade legal em um ambiente de software.
-## Resumo
-Este sistema funciona como um cofre de senhas (Vault) que prioriza os pilares da Segurança da Informação: **Confidencialidade, Integridade e Disponibilidade**. Mais do que um simples armazenamento, o projeto implementa controles técnicos rigorosos para mitigar riscos de vazamento de dados e garantir a privacidade do usuário final, alinhando o desenvolvimento de software às exigências da **LGPD (Lei Geral de Proteção de Dados)**.
+O **GSencript** é um projeto de Engenharia de Software desenvolvido para a disciplina de **Políticas de Segurança da Informação** na **UMC**. O sistema é um cofre de senhas (Vault) focado em criptografia de ponta e conformidade rigorosa com a **LGPD**.
 
-## Tecnologias Utilizadas
-* **Backend:** Python 3.14 / Django 6.0.4
-* **Segurança e Criptografia:**
-    * **Argon2:** Algoritmo de hashing de última geração para senhas de sistema.
-    * **AES-256 (Fernet):** Criptografia simétrica de nível militar para proteção das credenciais em repouso.
-    * **MFA (TOTP):** Autenticação de dois fatores implementada com `PyOTP`.
-* **Frontend:** Interface responsiva construída com Tailwind CSS e integração via Fetch API.
-* **Banco de Dados:** SQLite (persistência de dados criptografados).
+## 🚀 Novidades da Versão Atual (Integração Frontend):
+* **Fluxo de Cadastro Seguro:** Validação de senha forte em tempo real, confirmação dupla e visualização (toggle eye).
+* **MFA com QR Code:** Geração automática de código TOTP compatível com Google Authenticator e Authy, incluindo botão de cópia segura.
+* **Gate de Conformidade LGPD:** O botão de registro permanece bloqueado até que o usuário abra e aceite os Termos de Privacidade.
+* **Login em Duas Etapas:** Separação visual entre validação de credenciais e inserção do token 2FA.
+* **Recuperação de Senha (Recovery):** Sistema de tokens temporários (10 min) com interface dedicada para reset de senha mestra.
+
+## 🛡️ Tecnologias e Segurança
+* **Backend:** Django 6.0 / Python 3.14.
+* **Criptografia em Repouso:** AES-256 (Fernet) com chaves derivadas da `SECRET_KEY`.
+* **Hashing de Senha:** Argon2 (padrão Django) para proteção contra ataques de dicionário e brute-force.
+* **Frontend:** Vanilla JavaScript com Fetch API, CSS Moderno (Cyber-Vault Theme) e `qrcodejs` para MFA.
 
 📂 Estrutura do Projeto
-
 ```text
 .
-├── core/                # Configurações do Django (settings.py, urls.py)
-├── accounts/            # Auth, Hashing (Argon2) e MFA (TOTP)
-├── vault/               # Lógica do Cofre e Criptografia AES-256 (Fernet)
-├── lgpd/                # Gestão de Consentimento e Portabilidade de Dados
-├── static/              # CSS (Tailwind) e JavaScript (Fetch API)
-├── templates/           # Páginas HTML (Login, Cadastro, Dashboard)
-├── .env.example         # Template para variáveis de ambiente
-└── manage.py            # CLI do Django
+├── core/                # Configurações globais e Timezone
+├── accounts/            # Gestão de Usuários e Separação de Identidade
+├── authentication/      # Fluxo de Sessão (Login/Logout) e MFA
+├── recovery/            # Gestão de Tokens de Recuperação e Redefinição
+├── vault/               # Cofre Criptografado AES-256 e CRUD de Credenciais
+├── lgpd/                # Gestão de Consentimento e Termos de Uso
+├── templates/           # Interfaces HTML (Base, Vault, Login, Privacy)
+└── static/              # Estilos e Scripts (MFA, Validações)
 ```
 
-## Instalação e Configuração
-Para rodar o projeto em seu ambiente local (Windows 10):
-
-## 🔑 Variáveis de Ambiente (.env.example)
-
-Para a correta execução das políticas de segurança e criptografia, o arquivo `.env` deve ser configurado na raiz do projeto seguindo o modelo abaixo:
-
-```text
-# Django Settings
-SECRET_KEY=sua_chave_secreta_django
-DEBUG=True
-
-# Criptografia AES-256 (Gere uma chave válida usando: cryptography.fernet.Fernet.generate_key())
-ENCRYPTION_KEY=sua_chave_fernet_32_bytes_base64
-
-# Database
-DATABASE_URL=sqlite:///db.sqlite3
-```
-
-1.  **Clone o projeto:**
-    ```bash
-    git clone https://github.com/coragi-py/psi-gsencript.git
+## ⚙️ Instalação (Windows 10/11)
+1.  **Clone e Entre na Pasta:**
+    ```powershell
+    ggit clone -b add-frontend https://github.com/coragi-py/psi-gsencript.git
     cd psi-gsencript
     ```
-
-2.  **Prepare o ambiente (Virtualenv):**
-    ```bash
+2.  **Ambiente Virtual:**
+    ```powershell
     python -m venv venv
     .\venv\Scripts\activate
-    ```
-
-3.  **Instale os requisitos:**
-    ```bash
     pip install -r requirements.txt
     ```
-
-4.  **Sincronize o Banco de Dados:**
-    ```bash
-    python manage.py makemigrations
+3.  **Configuração e Migração:**
+    ```powershell
+    # Configure o .env com sua SECRET_KEY e ENCRYPTION_KEY
     python manage.py migrate
-    ```
-
-5.  **Inicie a aplicação:**
-    ```bash
     python manage.py runserver
     ```
 
-## Políticas Implementadas
-Este projeto materializa as seguintes políticas de segurança:
-* **Controle de Acesso Lógico:** Implementação de MFA para prevenir acessos não autorizados mesmo em caso de comprometimento da senha principal.
-* **Criptografia em Repouso:** Garantia de que dados sensíveis nunca sejam armazenados em texto claro (Plain Text).
-* **Privacy by Design (LGPD):** Ferramentas nativas para o exercício dos direitos do titular, como portabilidade (exportação) e direito ao esquecimento (exclusão).
-* **Gestão de Consentimento:** Controle rigoroso de processamento de dados baseado no aceite explícito do usuário.
+## 📡 Endpoints Principais (API & Interface)
 
-## Mapeamento da API (Rotas para Teste)
-
-### Gestão de Identidade (`/accounts/` & `/auth/`)
+### Autenticação & Recuperação
 | Método | Endpoint | Descrição |
 | :--- | :--- | :--- |
-| `POST` | `/accounts/registrar/` | Cadastro de usuário com aceite de LGPD e retorno de Segredo 2FA. |
-| `POST` | `/auth/login/` | Autenticação com verificação de credenciais e token TOTP. |
-| `POST` | `/auth/logout/` | Encerramento seguro da sessão. |
+| `GET/POST` | `/accounts/registrar/` | Cadastro com geração de QR Code para 2FA. |
+| `GET/POST` | `/auth/login/` | Autenticação em dois passos (Senha + Token). |
+| `GET/POST` | `/recovery/request/` | Solicitação de token de recuperação de conta. |
+| `GET/POST` | `/recovery/reset/` | Redefinição de senha mestra via token válido. |
 
-### Cofre de Credenciais (`/vault/`)
+### Gestão do Cofre
 | Método | Endpoint | Descrição |
 | :--- | :--- | :--- |
-| `POST` | `/vault/adicionar/` | Criptografa (AES-256) e armazena uma nova senha. |
-| `GET` | `/vault/listar/` | Recupera as senhas (decifradas) para o usuário autenticado. |
-| `POST` | `/vault/excluir/<id>/` | Remoção definitiva de uma credencial específica. |
-
-### Direitos do Titular - LGPD (`/lgpd/`)
-| Método | Endpoint | Descrição |
-| :--- | :--- | :--- |
-| `GET` | `/lgpd/exportar/` | **Portabilidade:** Gera JSON com todos os dados pessoais e do cofre. |
-| `POST` | `/lgpd/revogar/` | Revogação de consentimento e bloqueio imediato do acesso. |
-| `POST` | `/lgpd/excluir/` | **Direito ao Esquecimento:** Exclusão total e irreversível da conta. |
+| `GET` | `/vault/` | Dashboard principal (DashboardView). |
+| `POST` | `/vault/adicionar/` | Criptografia e armazenamento de nova credencial. |
+| `POST` | `/vault/excluir/<id>/` | Remoção protegida contra IDOR. |
 
 ---
 
 ## 📡 Documentação de Payloads (JSON)
 
-Abaixo estão os modelos de dados para as operações de criação (Create) e alteração (Alter) via API.
-
-### 1. Operações de Criação (Create)
-
-**Registrar Novo Usuário**
-* **Endpoint:** `POST /accounts/registrar/`
+### Registrar Usuário
+**POST** `/accounts/registrar/`
 ```json
 {
-  "username": "usuario_exemplo",
-  "email": "exemplo@dominio.com",
+  "full_name": "Testa da Silva",
+  "username": "teste@exemplo.com",
+  "email": "fabio@exemplo.com",
   "senha": "SenhaForte@123",
   "consentimento_lgpd": true
 }
 ```
 
-**Adicionar Credencial ao Cofre**
-* **Endpoint:** `POST /vault/adicionar/`
+### Resetar Senha
+**POST** `/recovery/reset/`
 ```json
 {
-  "titulo": "Nome do Site/Serviço",
-  "url": "https://www.exemplo.com",
-  "username": "meu_usuario",
-  "senha": "senha_que_sera_criptografada"
-}
-```
-
-### 2. Operações de Alteração (Alter)
-
-**Redefinição de Senha (Recovery)**
-* **Endpoint:** `POST /recovery/resetar/`
-```json
-{
-  "token": "codigo_recebido_por_email",
-  "nova_senha": "Nova@SenhaForte2026"
-}
-```
-
-**Atualizar Credencial Existente**
-* **Endpoint:** `POST /vault/atualizar/<id>/`
-```json
-{
-  "titulo": "Nome Atualizado",
-  "url": "https://nova-url.com",
-  "username": "novo_usuario",
-  "senha": "nova_senha_criptografada"
-}
-```
-
-### 3. Autenticação e Acesso
-
-**Login com MFA**
-* **Endpoint:** `POST /auth/login/`
-```json
-{
-  "username": "usuario_exemplo",
-  "password": "SenhaForte@123",
-  "token_2fa": "123456"
+  "token": "TOKEN_GERADO_PELO_SISTEMA",
+  "nova_senha": "NovaSenhaForte@2026"
 }
 ```
 
 ---
 
-**Alunos:** \
-&emsp;Anny Gabriely Souza do Nascimento\
-&emsp;Antonio Luiz Lins Neto\
-&emsp;Fábio Yuuki Saruwataru \
-**Docente responsável:** \
-&emsp;Prof. Dr. Fabiano Bezerra Menegidio \
-**Disciplina:** \
-&emsp;Políticas de Segurança da Informação  
-**Instituição:** \
-&emsp;UMC - Universidade de Mogi das Cruzes
+**Equipe de Desenvolvimento:**
+&emsp;Anny Gabriely Souza do Nascimento | Antonio Luiz Lins Neto | Fábio Yuuki Saruwataru
+
+**Orientação:** Prof. Dr. Fabiano Bezerra Menegidio
+**Instituição:** UMC - Universidade de Mogi das Cruzes
+```
