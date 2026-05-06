@@ -1,9 +1,14 @@
 import json
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
 from django.views.decorators.csrf import csrf_exempt
 from .models import CredencialCofre
+
+
+@login_required
+def dashboard_view(request):
+    return render(request, 'vault/dashboard.html')
 
 @login_required
 def listar_senhas(request):

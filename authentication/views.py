@@ -1,6 +1,9 @@
 import json
 import pyotp
+from urllib import request
+from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
+from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import logout
@@ -8,6 +11,10 @@ from accounts.models import User
 
 @csrf_exempt
 def login_usuario(request):
+
+    if request.method == 'GET':
+        return render(request, 'authentication/login.html')
+    
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
@@ -30,7 +37,8 @@ def login_usuario(request):
                     
                     return JsonResponse({
                         "mensagem": "Login realizado com sucesso!",
-                        "usuario": user.username
+                        "usuario": username,
+                        "redirect": "/vault/"
                     }, status=200)
                 else:
                     return JsonResponse({"erro": "Código 2FA inválido."}, status=401)
@@ -47,6 +55,7 @@ def logout_usuario(request):
     if request.method == 'POST':
         # Item 1.10 Logout da sessão atual
         logout(request) 
-        return JsonResponse({"mensagem": "Sessão encerrada com sucesso."}, status=200)
+        messages.success(request, "Você encerrou sua sessão com segurança.")
+        return redirect('landing')
     
     return JsonResponse({"erro": "Método não permitido"}, status=405)

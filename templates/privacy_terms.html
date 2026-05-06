@@ -1,0 +1,45 @@
+{% extends 'base.html' %} {% block content %}
+<div class="auth-container" style="max-width: 800px; text-align: left">
+  <h2>TERMOS DE PRIVACIDADE E USO</h2>
+  <div
+    class="terms-content"
+    style="
+      height: 400px;
+      overflow-y: scroll;
+      padding: 20px;
+      background: var(--bg-dark);
+      border: 1px solid var(--border);
+      font-size: 0.9rem;
+      color: var(--text-dim);
+    "
+  >
+    <h3>1. Coleta de Dados</h3>
+    <p>
+      Coletamos seu Nome, E-mail e Hash de Senha para fins de autenticação e
+      segurança da conta.
+    </p>
+
+    <h3>2. Finalidade</h3>
+    <p>
+      Os dados são utilizados exclusivamente para permitir o acesso ao cofre de
+      senhas e para auditoria de segurança (logs de acesso).
+    </p>
+
+    <h3>3. Criptografia</h3>
+    <p>
+      Suas senhas armazenadas no cofre são cifradas com AES-256 antes de serem
+      salvas. O GSencript não possui acesso à sua senha mestra.
+    </p>
+
+    <h3>4. Retenção</h3>
+    <p>
+      Os dados serão mantidos enquanto a conta estiver ativa. Em caso de
+      exclusão, todos os registros associados serão removidos permanentemente em
+      até 30 dias.
+    </p>
+  </div>
+  <div style="margin-top: 20px">
+    <a href="{% url 'registrar' %}" class="btn-primary">VOLTAR AO CADASTRO</a>
+  </div>
+</div>
+{% endblock %}

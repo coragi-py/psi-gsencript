@@ -1,0 +1,208 @@
+{% extends 'base.html' %} {% block content %}
+<div class="container" style="margin-top: 30px">
+  <!-- Header do Cofre -->
+  <div
+    style="
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 40px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 20px;
+    "
+  >
+    <div>
+      <h1 style="color: var(--accent); font-family: var(--font-mono)">
+        VAULT://{{ user.first_name|upper }}
+      </h1>
+      <p style="font-size: 0.8rem; color: var(--text-dim)">
+        Sessão ativa: {{ user.email }}
+      </p>
+    </div>
+    <div style="display: flex; gap: 15px">
+      <button class="btn-primary" onclick="abrirModal()">
+        + NOVA CREDENCIAL
+      </button>
+      <form action="{% url 'logout' %}" method="POST">
+        {% csrf_token %}
+        <button
+          type="submit"
+          class="btn-primary"
+          style="background: #ff4d4d; box-shadow: none"
+        >
+          LOGOUT
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Grid de Senhas -->
+  <div
+    id="lista-senhas"
+    style="
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    "
+  >
+    <!-- Os cards serão inseridos aqui pelo JavaScript -->
+    <div
+      class="loading"
+      style="color: var(--accent); text-align: center; grid-column: 1/-1"
+    >
+      <i class="fas fa-spinner fa-spin"></i> DESCRIPTOGRAFANDO DADOS...
+    </div>
+  </div>
+</div>
+
+<!-- Modal para Adicionar/Editar (Simplificado para o teste) -->
+<div
+  id="modal-senha"
+  style="
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+  "
+>
+  <div class="auth-container" style="margin-top: 0; width: 400px">
+    <h2 id="modal-titulo">ADICIONAR ITEM</h2>
+    <input
+      type="text"
+      id="add-titulo"
+      placeholder="Título (Ex: Gmail)"
+      class="form-group"
+      style="width: 100%; padding: 10px; margin-bottom: 10px"
+    />
+    <input
+      type="text"
+      id="add-url"
+      placeholder="URL do Site"
+      style="width: 100%; padding: 10px; margin-bottom: 10px"
+    />
+    <input
+      type="text"
+      id="add-username"
+      placeholder="Usuário/E-mail no site"
+      style="width: 100%; padding: 10px; margin-bottom: 10px"
+    />
+    <input
+      type="password"
+      id="add-senha"
+      placeholder="Senha"
+      style="width: 100%; padding: 10px; margin-bottom: 20px"
+    />
+
+    <button class="btn-primary btn-full" onclick="salvarSenha()">
+      SALVAR CRIPTOGRAFADO
+    </button>
+    <button
+      class="btn-primary btn-full"
+      onclick="fecharModal()"
+      style="background: #333; margin-top: 10px"
+    >
+      CANCELAR
+    </button>
+  </div>
+</div>
+{% endblock %} {% block scripts %}
+<script>
+  // Carrega as senhas da sua API /vault/listar/
+  async function carregarSenhas() {
+    try {
+      const response = await fetch('{% url "listar_senhas" %}');
+      const data = await response.json();
+      const container = document.getElementById("lista-senhas");
+
+      if (data.erro) {
+        container.innerHTML = `<p style="color:red; text-align:center;">${data.erro}</p>`;
+        return;
+      }
+
+      if (data.length === 0) {
+        container.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:50px; border:1px dashed var(--border);">Cofre vazio.</div>`;
+        return;
+      }
+
+      container.innerHTML = data
+        .map(
+          (s) => `
+                <div class="auth-container" style="margin:0; padding:20px; border:1px solid var(--border);">
+                    <h3 style="color:var(--accent); margin-bottom:10px;">${s.titulo}</h3>
+                    <p style="font-size:0.8rem; color:var(--text-dim); margin-bottom:5px;">USER: ${s.username}</p>
+                    <div style="display:flex; align-items:center; gap:10px; background:#000; padding:8px; border-radius:4px;">
+                        <input type="password" value="${s.senha}" readonly id="pass-${s.id}" style="background:transparent; border:none; color:white; flex:1; font-family:monospace;">
+                        <i class="fas fa-eye" onclick="toggleView(${s.id})" style="cursor:pointer; color:var(--accent);"></i>
+                    </div>
+                    <div style="margin-top:15px; display:flex; gap:10px;">
+                        <button onclick="excluirSenha(${s.id})" style="background:none; border:none; color:#ff4d4d; cursor:pointer; font-size:0.8rem;">[EXCLUIR]</button>
+                    </div>
+                </div>
+            `,
+        )
+        .join("");
+    } catch (err) {
+      console.error("Erro ao carregar vault:", err);
+    }
+  }
+
+  function toggleView(id) {
+    const input = document.getElementById(`pass-${id}`);
+    input.type = input.type === "password" ? "text" : "password";
+  }
+
+  async function excluirSenha(id) {
+    if (!confirm("Tem certeza que deseja remover esta credencial?")) return;
+
+    const response = await fetch(`/vault/excluir/${id}/`, {
+      method: "POST", // Sua view aceita POST para exclusão
+      headers: { "X-CSRFToken": "{{ csrf_token }}" },
+    });
+
+    if (response.ok) carregarSenhas();
+  }
+
+  // Funções de Modal (Simples)
+  function abrirModal() {
+    document.getElementById("modal-senha").style.display = "flex";
+  }
+  function fecharModal() {
+    document.getElementById("modal-senha").style.display = "none";
+  }
+
+  async function salvarSenha() {
+    const dados = {
+      titulo: document.getElementById("add-titulo").value,
+      url: document.getElementById("add-url").value,
+      username: document.getElementById("add-username").value,
+      senha: document.getElementById("add-senha").value,
+    };
+
+    const response = await fetch('{% url "adicionar_senha" %}', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": "{{ csrf_token }}",
+      },
+      body: JSON.stringify(dados),
+    });
+
+    if (response.status === 201) {
+      fecharModal();
+      carregarSenhas();
+    } else {
+      const r = await response.json();
+      alert(r.erro);
+    }
+  }
+
+  // Inicia a busca ao carregar a página
+  carregarSenhas();
+</script>
+{% endblock %}

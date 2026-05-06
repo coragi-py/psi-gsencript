@@ -1,0 +1,46 @@
+{% extends 'base.html' %} {% block content %}
+<section class="hero">
+  <div class="container">
+    <h1>PROTEÇÃO EM CAMADAS.</h1>
+    <p>
+      Cofre de credenciais com criptografia AES-256 e conformidade nativa com as
+      políticas de segurança da informação.
+    </p>
+
+    <div class="hero-actions">
+      <a href="{% url 'registrar' %}" class="btn-primary">INICIAR PROTOCOLO</a>
+    </div>
+  </div>
+</section>
+
+<section class="features">
+  <div class="container grid">
+    <div class="card">
+      <i class="fas fa-microchip"></i>
+      <h3>AES-256 bit</h3>
+      <p>
+        Dados cifrados em repouso. Nem o administrador do banco possui acesso às
+        suas chaves de criptografia.
+      </p>
+    </div>
+
+    <div class="card">
+      <i class="fas fa-fingerprint"></i>
+      <h3>TOTP Ready</h3>
+      <p>
+        Segunda camada de autenticação via tokens temporários compatíveis com
+        Google Authenticator e Authy.
+      </p>
+    </div>
+
+    <div class="card">
+      <i class="fas fa-balance-scale"></i>
+      <h3>LGPD Compliance</h3>
+      <p>
+        Direito ao esquecimento, portabilidade e gestão de consentimento
+        integrados ao núcleo do sistema.
+      </p>
+    </div>
+  </div>
+</section>
+{% endblock %}

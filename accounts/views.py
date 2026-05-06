@@ -6,6 +6,7 @@ from django.db import transaction
 from django.views.decorators.csrf import csrf_exempt
 from .models import User
 from lgpd.models import ConsentimentoLGPD
+from django.shortcuts import render
 
 def validar_senha_forte(senha):
     # Regra de complexidade da senha
@@ -19,15 +20,27 @@ def validar_senha_forte(senha):
 
 @csrf_exempt
 def registrar_usuario(request):
+    if request.method == 'GET':
+        return render(request, 'accounts/registrar.html')
+    
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            full_name = data.get('full_name', '')
             email = data.get('email')
             username = data.get('username')
             senha = data.get('senha')
             consentimento_recebido = data.get('consentimento_lgpd')
 
-            # Validação de LGPD
+            # Lógica para separar Nome de Sobrenome
+            if full_name:
+                partes_nome = full_name.split(' ', 1)
+                first_name = partes_nome[0]
+                last_name = partes_nome[1] if len(partes_nome) > 1 else ""
+            else:
+                first_name, last_name = "", ""
+
+            #   Validação de LGPD
             if not consentimento_recebido:
                 return JsonResponse({"erro": "O consentimento da LGPD é obrigatório."}, status=400)
 
@@ -45,7 +58,9 @@ def registrar_usuario(request):
                 user = User.objects.create_user(
                     username=username, 
                     email=email, 
-                    password=senha
+                    password=senha,
+                    first_name=first_name,
+                    last_name=last_name
                 )
                 user.two_factor_secret = pyotp.random_base32()
                 user.save()
@@ -63,4 +78,5 @@ def registrar_usuario(request):
             }, status=201)
         except Exception as e:
             return JsonResponse({"erro": str(e)}, status=500)
+        
     return JsonResponse({"erro": "Método não permitido"}, status=405)

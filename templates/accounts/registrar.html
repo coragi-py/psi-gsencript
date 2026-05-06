@@ -1,0 +1,260 @@
+{% extends 'base.html' %} {% block content %}
+<div class="auth-container">
+  <div id="register-flow">
+    <h2>CADASTRO</h2>
+    <form id="form-registro">
+      <!-- Campos de Nome e Email -->
+      <div class="form-group">
+        <label>NOME COMPLETO</label>
+        <input type="text" id="full_name" required />
+      </div>
+      <div class="form-group">
+        <label>E-MAIL</label>
+        <input type="email" id="email" required />
+      </div>
+
+      <!-- Campos de Senha com Olhinho -->
+      <div class="form-group">
+        <label>SENHA</label>
+        <div class="password-wrapper">
+          <input type="password" id="senha" class="pass-field" required />
+          <button
+            type="button"
+            class="toggle-password"
+            onclick="togglePass('senha')"
+          >
+            <i class="fas fa-eye"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>CONFIRMAR SENHA</label>
+        <div class="password-wrapper">
+          <input
+            type="password"
+            id="confirmar_senha"
+            class="pass-field"
+            required
+          />
+          <button
+            type="button"
+            class="toggle-password"
+            onclick="togglePass('confirmar_senha')"
+          >
+            <i class="fas fa-eye"></i>
+          </button>
+        </div>
+        <small
+          id="pass-match-msg"
+          style="display: none; font-size: 0.7rem; margin-top: 5px"
+        ></small>
+      </div>
+
+      <!-- Checkbox e Link de Termos -->
+      <div
+        class="form-group"
+        style="display: flex; align-items: center; gap: 10px"
+      >
+        <input type="checkbox" id="check_termos" style="width: auto" />
+        <label style="margin-bottom: 0; font-size: 0.75rem">
+          Eu li e aceito os
+          <a
+            href="{% url 'privacidade' %}"
+            id="link-termos"
+            target="_blank"
+            style="color: var(--accent); text-decoration: underline"
+          >
+            Termos de Privacidade
+          </a>
+        </label>
+      </div>
+
+      <button
+        type="submit"
+        id="btn-submit"
+        class="btn-primary btn-full"
+        disabled
+      >
+        CADASTRAR
+      </button>
+    </form>
+  </div>
+
+  <!-- Seção de MFA (Onde o QR Code deve aparecer) -->
+  <div
+    id="mfa-section"
+    class="mfa-setup"
+    style="display: none; text-align: center"
+  >
+    <h2>AUTENTICAÇÃO 2FA</h2>
+    <p style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 20px">
+      Escaneie o código abaixo no seu App de autenticação. (Google
+      authenticator, Microsoft authenticator, Authy, etc)
+    </p>
+
+    <!-- O ID AQUI PRECISA SER EXATAMENTE O MESMO DO JS -->
+    <div
+      id="qrcode-canvas"
+      style="
+        display: inline-block;
+        padding: 10px;
+        background: white;
+        border-radius: 8px;
+      "
+    ></div>
+
+    <div class="form-group" style="margin-top: 20px">
+      <label>CHAVE MANUAL</label>
+      <div
+        class="secret-container"
+        style="display: flex; background: #000; border: 1px solid var(--border)"
+      >
+        <input
+          type="text"
+          id="mfa-secret-text"
+          class="secret-input"
+          style="
+            flex: 1;
+            background: transparent;
+            color: var(--accent);
+            border: none;
+            padding: 10px;
+          "
+          readonly
+        />
+        <button
+          type="button"
+          onclick="copySecret()"
+          style="
+            background: var(--border);
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            color: white;
+          "
+        >
+          <i class="fas fa-copy"></i>
+        </button>
+      </div>
+      <small id="copy-msg" style="color: var(--success); display: none"
+        >Copiado!</small
+      >
+    </div>
+    <a
+      href="{% url 'login' %}"
+      class="btn-primary btn-full"
+      style="display: block; margin-top: 20px"
+      >IR PARA LOGIN</a
+    >
+  </div>
+</div>
+{% endblock %} {% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<script>
+  let termosLidos = false;
+
+  // 1. Marcar termos como lidos ao clicar no link
+  document.getElementById("link-termos").addEventListener("click", () => {
+    termosLidos = true;
+    validarForm();
+  });
+
+  function togglePass(id) {
+    const input = document.getElementById(id);
+    const icon = input.nextElementSibling.querySelector("i");
+    input.type = input.type === "password" ? "text" : "password";
+    icon.classList.toggle("fa-eye");
+    icon.classList.toggle("fa-eye-slash");
+  }
+
+  const btnSubmit = document.getElementById("btn-submit");
+  const pass = document.getElementById("senha");
+  const confirmPass = document.getElementById("confirmar_senha");
+  const checkTermos = document.getElementById("check_termos");
+  const matchMsg = document.getElementById("pass-match-msg");
+
+  function validarForm() {
+    const senhasIguais = pass.value === confirmPass.value && pass.value !== "";
+    const termosCheck = checkTermos.checked;
+
+    if (pass.value !== "" && confirmPass.value !== "") {
+      matchMsg.style.display = "block";
+      matchMsg.innerText = senhasIguais
+        ? "✓ Senhas coincidem"
+        : "✗ Senhas diferentes";
+      matchMsg.style.color = senhasIguais ? "var(--success)" : "#ff4d4d";
+    }
+
+    // SÓ HABILITA SE: Senhas iguais + Checkbox marcado + Clicou no link
+    btnSubmit.disabled = !(senhasIguais && termosCheck && termosLidos);
+
+    if (!termosLidos && termosCheck) {
+      matchMsg.style.display = "block";
+      matchMsg.innerText = "Abra os Termos de Privacidade primeiro.";
+      matchMsg.style.color = "var(--accent)";
+    }
+  }
+
+  [pass, confirmPass, checkTermos].forEach((el) =>
+    el.addEventListener("input", validarForm),
+  );
+
+  function copySecret() {
+    const text = document.getElementById("mfa-secret-text");
+    navigator.clipboard.writeText(text.value);
+    document.getElementById("copy-msg").style.display = "block";
+    setTimeout(
+      () => (document.getElementById("copy-msg").style.display = "none"),
+      2000,
+    );
+  }
+
+  document
+    .getElementById("form-registro")
+    .addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const email = document.getElementById("email").value;
+      const dados = {
+        full_name: document.getElementById("full_name").value,
+        username: email,
+        email: email,
+        senha: pass.value,
+        consentimento_lgpd: checkTermos.checked,
+      };
+
+      try {
+        const response = await fetch('{% url "registrar" %}', {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(dados),
+        });
+
+        const result = await response.json();
+
+        if (response.status === 201) {
+          const secret = result["2fa_secret"];
+          document.getElementById("register-flow").style.display = "none";
+          document.getElementById("mfa-section").style.display = "block";
+          document.getElementById("mfa-secret-text").value = secret;
+
+          // GERAR QR CODE
+          const otpauth = `otpauth://totp/GSencript:${email}?secret=${secret}&issuer=GSencript`;
+          document.getElementById("qrcode-canvas").innerHTML = "";
+
+          new QRCode(document.getElementById("qrcode-canvas"), {
+            text: otpauth,
+            width: 160,
+            height: 160,
+          });
+        } else {
+          alert(result.erro || "Erro no cadastro");
+        }
+      } catch (err) {
+        alert("Erro de conexão");
+      }
+    });
+</script>
+{% endblock %}
