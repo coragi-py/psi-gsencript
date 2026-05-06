@@ -44,7 +44,7 @@ O **GSencript** é um projeto de Engenharia de Software desenvolvido para a disc
 ## ⚙️ Instalação (Windows 10/11)
 1.  **Clone e Entre na Pasta:**
     ```powershell
-    ggit clone -b add-frontend https://github.com/coragi-py/psi-gsencript.git
+    git clone -b add-frontend https://github.com/coragi-py/psi-gsencript.git
     cd psi-gsencript
     ```
 2.  **Ambiente Virtual:**
