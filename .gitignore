@@ -1,6 +1,6 @@
 # .gitignore
+postgres.data/
 .env
 __pycache__/
-*.pyc
-db.sqlite3
-.vscode/
+*.py[cod]
+.venv/
