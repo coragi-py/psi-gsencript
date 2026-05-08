@@ -2,18 +2,11 @@
 <div class="auth-container">
   <div id="login-flow">
     <h2>IDENTIFICAÇÃO</h2>
-    <form id="form-login">
-      <!-- ETAPA 1: CREDENCIAIS -->
+    <form id="form-login" onsubmit="return false;">
       <div id="step-1">
         <div class="form-group">
           <label>E-MAIL</label>
-          <input
-            type="email"
-            id="email"
-            name="username"
-            autocomplete="username"
-            required
-          />
+          <input type="email" id="email" required autocomplete="username" />
         </div>
         <div class="form-group">
           <label>SENHA</label>
@@ -21,9 +14,8 @@
             <input
               type="password"
               id="senha"
-              name="password"
-              autocomplete="current-password"
               required
+              autocomplete="current-password"
             />
             <button
               type="button"
@@ -48,14 +40,14 @@
         </div>
         <button
           type="button"
-          onclick="showMFAStep()"
+          id="btn-next"
+          onclick="handleStep1()"
           class="btn-primary btn-full"
         >
           PRÓXIMO
         </button>
       </div>
 
-      <!-- ETAPA 2: MFA -->
       <div id="step-2" style="display: none">
         <div class="form-group">
           <label>CÓDIGO MFA (6 DÍGITOS)</label>
@@ -67,7 +59,12 @@
             style="text-align: center; letter-spacing: 8px; font-size: 1.8rem"
           />
         </div>
-        <button type="submit" class="btn-primary btn-full">
+        <button
+          type="button"
+          id="btn-login"
+          onclick="handleStep2()"
+          class="btn-primary btn-full"
+        >
           DESBLOQUEAR COFRE
         </button>
         <button
@@ -91,12 +88,6 @@
 </div>
 {% endblock %} {% block scripts %}
 <script>
-  // Variáveis de estado para bater com seu authentication/views.py
-  let tempCredentials = {
-    username: "",
-    password: "",
-  };
-
   function togglePass(id) {
     const input = document.getElementById(id);
     const icon = input.nextElementSibling.querySelector("i");
@@ -105,65 +96,99 @@
     icon.classList.toggle("fa-eye-slash");
   }
 
-  // Transição visual (Front-end apenas)
-  function showMFAStep() {
-    const email = document.getElementById("email").value;
-    const senha = document.getElementById("senha").value;
+  // Captura o "Enter" nos campos para disparar a função correta da etapa
+  document.getElementById("senha").addEventListener("keypress", (e) => {
+    if (e.key === "Enter") handleStep1();
+  });
+  document.getElementById("token_2fa").addEventListener("keypress", (e) => {
+    if (e.key === "Enter") handleStep2();
+  });
 
-    if (!email || !senha) {
-      alert("Por favor, preencha as credenciais.");
+  // ETAPA 1: Validar apenas Usuário e Senha
+  async function handleStep1() {
+    const username = document.getElementById("email").value;
+    const password = document.getElementById("senha").value;
+
+    if (!username || !password) {
+      alert("Preencha todos os campos.");
       return;
     }
 
-    document.getElementById("step-1").style.display = "none";
-    document.getElementById("step-2").style.display = "block";
-    document.getElementById("token_2fa").focus();
+    const btn = document.getElementById("btn-next");
+    btn.innerText = "VALIDANDO...";
+    btn.disabled = true;
+
+    try {
+      const response = await fetch('{% url "validar_credenciais" %}', {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": "{{ csrf_token }}",
+        },
+        body: JSON.stringify({ username, password }),
+      });
+
+      if (response.ok) {
+        document.getElementById("step-1").style.display = "none";
+        document.getElementById("step-2").style.display = "block";
+        document.getElementById("token_2fa").focus();
+      } else {
+        const result = await response.json();
+        alert("Erro: " + (result.erro || "Credenciais inválidas."));
+      }
+    } catch (err) {
+      alert("Erro de conexão com o servidor.");
+    } finally {
+      btn.innerText = "PRÓXIMO";
+      btn.disabled = false;
+    }
+  }
+
+  // ETAPA 2: Finalizar o Login com o Token
+  async function handleStep2() {
+    const username = document.getElementById("email").value;
+    const password = document.getElementById("senha").value;
+    const token = document.getElementById("token_2fa").value;
+
+    if (!token) {
+      alert("Digite o código MFA.");
+      return;
+    }
+
+    const btn = document.getElementById("btn-login");
+    btn.innerText = "AUTENTICANDO...";
+    btn.disabled = true;
+
+    try {
+      const response = await fetch('{% url "login" %}', {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": "{{ csrf_token }}",
+        },
+        body: JSON.stringify({ username, password, token_2fa: token }),
+      });
+
+      const result = await response.json();
+
+      if (response.status === 200) {
+        window.location.href = "/vault/";
+      } else {
+        alert("Erro: " + (result.erro || "Código inválido."));
+        document.getElementById("token_2fa").value = "";
+      }
+    } catch (err) {
+      alert("Erro de autenticação.");
+    } finally {
+      btn.innerText = "DESBLOQUEAR COFRE";
+      btn.disabled = false;
+    }
   }
 
   function resetLogin() {
     document.getElementById("step-2").style.display = "none";
     document.getElementById("step-1").style.display = "block";
+    document.getElementById("token_2fa").value = "";
   }
-
-  // O ENVIO REAL: Envia tudo para o seu login_usuario no Python
-  document
-    .getElementById("form-login")
-    .addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      const username = document.getElementById("email").value;
-      const password = document.getElementById("senha").value;
-      const token = document.getElementById("token_2fa").value;
-
-      const dadosParaEnviar = {
-        username: username,
-        password: password,
-        token_2fa: token,
-      };
-
-      try {
-        const response = await fetch('{% url "login" %}', {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": "{{ csrf_token }}",
-          },
-          body: JSON.stringify(dadosParaEnviar),
-        });
-
-        const result = await response.json();
-
-        if (response.status === 200) {
-          // Login com sucesso (Item 1.9 do seu comentário no código)
-          window.location.href = "/vault/";
-        } else {
-          alert("Erro no Login: " + (result.erro || "Falha na autenticação"));
-          // Se errar, volta para o passo 1 para segurança
-          resetLogin();
-        }
-      } catch (err) {
-        alert("Erro de comunicação com o servidor.");
-      }
-    });
 </script>
 {% endblock %}

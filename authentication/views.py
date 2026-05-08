@@ -1,13 +1,26 @@
 import json
 import pyotp
-from urllib import request
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import logout
-from accounts.models import User
+
+@csrf_exempt
+def validar_credenciais(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        username = data.get('username')
+        password = data.get('password')
+        
+        user = authenticate(request, username=username, password=password)
+        
+        if user is not None:
+            return JsonResponse({"status": "ok"}, status=200)
+        else:
+            return JsonResponse({"erro": "E-mail ou senha incorretos."}, status=401)
+    return JsonResponse({"erro": "Método inválido"}, status=405)
 
 @csrf_exempt
 def login_usuario(request):
