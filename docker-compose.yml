@@ -1,0 +1,32 @@
+services:
+  db:
+    image: postgres:15 # Versão do PostgreSQL
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/ # Persistência dos dados
+    environment:
+      - POSTGRES_DB=${DB_NAME} # Variável de ambiente para o nome do banco de dados
+      - POSTGRES_USER=${DB_USER} # Variável de ambiente para o usuário do banco de dados
+      - POSTGRES_PASSWORD=${DB_PASSWORD} # Variável de ambiente para a senha do banco de dados
+    networks:
+      - internal_network # Conexão com a rede
+
+  web:
+    build: . # Construção da imagem a partir do Dockerfile
+    command: python manage.py runserver 0.0.0.0:8000 # Comando para iniciar o servidor Django
+    volumes:
+      - .:/app # Montagem do diretório atual para dentro do container
+    ports:
+      - "8000:8000" # Mapeamento da porta 8000 do container para a porta 8000 do host
+    environment:
+      - DATABASE_URL=postgres://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME} # Variável de ambiente para a URL de conexão com o banco de dados
+    depends_on:
+      - db # Garante que o serviço de banco de dados seja iniciado antes do serviço web
+    networks:
+      - internal_network # Conexão com a rede
+
+networks:
+  internal_network:
+    driver: bridge # Tipo de rede para comunicação entre os containers
+
+volumes:
+  postgres_data: # Volume para persistência dos dados do PostgreSQL

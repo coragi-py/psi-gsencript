@@ -2,6 +2,7 @@ import os
 from dotenv import load_dotenv
 from pathlib import Path
 from django.contrib.auth.hashers import Argon2PasswordHasher
+import dj_database_url
 
 # Valores baseados nas recomendações da RFC9106 e OWASP
 class CustomArgon2Hasher(Argon2PasswordHasher):
@@ -79,24 +80,11 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-'''
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'nome_do_banco',
-        'USER': 'usuario_do_banco',
-        'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': 'localhost',
-        'PORT': '5432',
-    }
-}
-'''
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        conn_max_age=600, # Persistência de conexões para melhorar performance
+        conn_health_checks=True, # Verificação de saúde das conexões para evitar conexões inválidas
+    )
 }
 
 # Password validation
