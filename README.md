@@ -16,14 +16,17 @@ O **GSencript** é um projeto de Engenharia de Software desenvolvido para a disc
 O projeto foi desenhado seguindo padrões modernos de engenharia:
 * **Padrão de Projeto:** MVT (Model-View-Template).
 * **Arquitetura de Software:** Monolito Modularizado (apps isolados para Accounts, Vault, Audit e LGPD).
-* **Infraestrutura:** Microsserviços Conteinerizados (Separação entre App Django e Banco de Dados via Docker).
+* **Infraestrutura:** Ambiente Conteinerizados (Separação entre App Django e Banco de Dados via Docker).
 * **Segurança:** Arquitetura *Zero-Knowledge* (o servidor armazena apenas dados cifrados, sem acesso às senhas originais).
 
-## 🚀 Novidades da Versão (Branch `docker-postgres`)
+## 🚀 Novidades da Versão (Versão 1.1)
 * **Conteinerização com Docker:** Implementação de Dockerfile e Docker Compose para deploy "Run Anywhere".
 * **Persistência com PostgreSQL:** Migração do SQLite para SGBD relacional robusto, isolado em rede interna Docker.
 * **UX/UI Refinada:** Correção de overflow de tokens, visualização de senha mestra e sistema de scrollbar.
 * **Conformidade LGPD:** Página de Termos de Uso e Privacidade integrada com trava de registro e logs de consentimento.
+* **Validação de Login em Duas Etapas:** Separação da validação de credenciais (Password check) do desafio de segundo fator (MFA/TOTP).
+* **Central de Gestão de Privacidade:** Interface visual (Cards) para exercício pleno dos direitos do titular (LGPD Art. 18).
+* **Portão de Reativação de Consentimento:** Sistema de bloqueio automático de processamento de dados em caso de revogação de consentimento.
 
 ## 🛡️ Tecnologias Utilizadas
 * **Backend:** Django 6.0.4 / Python 3.12 (Ambiente Linux Docker).
@@ -31,28 +34,63 @@ O projeto foi desenhado seguindo padrões modernos de engenharia:
 * **Segurança:** AES-256 (Fernet), Argon2 (Hashing), PyOTP (MFA/TOTP).
 * **Auditoria:** Sistema de logs interno e `django-axes` para prevenção de Brute Force.
 * **Frontend:** Vanilla JS, Fetch API e CSS Moderno.
+* O GSencript utiliza Argon2id (vencedor do Password Hashing Competition) para o armazenamento de hashes, configurado para resistir a ataques de canal lateral e força bruta via GPU/ASIC.
 
 ## ⚙️ Instalação e Execução (Docker - Recomendado)
-O projeto está configurado para subir todo o ambiente (Python + Postgres) com um único comando:
 
-1.  **Clone e Acesse a Branch:**
-    ```powershell
-    git clone -b docker-postgres [https://github.com/coragi-py/psi-gsencript.git](https://github.com/coragi-py/psi-gsencript.git)
-    cd psi-gsencript
-    ```
-2.  **Configure o Ambiente:**
-    * Renomeie o `.env.example` para `.env`.
-    * Defina suas chaves (`SECRET_KEY`, `DB_PASSWORD`, etc).
-3.  **Suba o Container:**
-    ```powershell
-    docker-compose up --build -d
-    ```
-4.  **Aplique as Migrações no Banco:**
-    ```powershell
-    docker-compose exec web python manage.py migrate
-    docker-compose exec web python manage.py createsuperuser
-    ```
-Acesse em: `http://localhost:8000`
+O **GSencript** utiliza Docker para garantir que o ambiente de execução seja idêntico em qualquer máquina, isolando o servidor Django e o banco de dados PostgreSQL.
+
+### 1. Pré-requisitos
+
+* [Docker Desktop](https://www.docker.com/products/docker-desktop/) instalado.
+* Git instalado.
+
+### 2. Clonagem e Configuração
+
+```powershell
+# Clone o repositório (v1.1 Main)
+git clone https://github.com/coragi-py/psi-gsencript.git
+cd psi-gsencript
+
+# Configure as variáveis de ambiente
+# Copie o arquivo de exemplo para o arquivo real
+cp .env.example .env
+
+```
+
+> **Nota:** Abra o arquivo `.env` e defina suas chaves secretas e senhas do banco de dados antes de prosseguir.
+
+### 3. Build e Inicialização
+
+Execute o comando abaixo para construir as imagens e subir os containers em segundo plano:
+
+```powershell
+docker-compose up --build -d
+
+```
+
+### 4. Preparação do Ambiente e Banco
+
+Agora, execute as migrações para estruturar o PostgreSQL e crie o usuário administrador do sistema:
+
+```powershell
+# Aplica a estrutura do banco (MFA, Vault, LGPD, etc)
+docker-compose exec web python manage.py migrate
+
+# Cria o superusuário administrador
+docker-compose exec web python manage.py createsuperuser
+
+```
+
+### 5. Manutenção e Comandos Úteis
+
+* **Acessar o sistema:** `http://localhost:8000`
+* **Limpar bloqueios de IP (Axes):** Caso você erre a senha muitas vezes no teste:
+`docker-compose exec web python manage.py axes_reset`
+* **Ver Logs em tempo real:**
+`docker-compose logs -f web`
+* **Derrubar os serviços:**
+`docker-compose down`
 
 ---
 
@@ -64,6 +102,7 @@ Acesse em: `http://localhost:8000`
 | `POST` | `/accounts/registrar/` | Cadastro de usuário com aceite de LGPD e retorno de Segredo 2FA. |
 | `POST` | `/auth/login/` | Autenticação com verificação de credenciais e token TOTP. |
 | `POST` | `/auth/logout/` | Encerramento seguro da sessão. |
+| `POST` | `/auth/validar-credenciais/` | **Pre-auth Check:** Valida usuário/senha antes de solicitar o 2FA.|
 
 ### Cofre de Credenciais (`/vault/`)
 | Método | Endpoint | Descrição |
@@ -78,6 +117,13 @@ Acesse em: `http://localhost:8000`
 | `GET` | `/lgpd/exportar/` | **Portabilidade:** Gera JSON com todos os dados pessoais e do cofre. |
 | `POST` | `/lgpd/revogar/` | Revogação de consentimento e bloqueio imediato do acesso. |
 | `POST` | `/lgpd/excluir/` | **Direito ao Esquecimento:** Exclusão total e irreversível da conta. |
+
+### Gestão de Privacidade (`/privacidade/`)
+| Método | Endpoint | Descrição |
+| :--- | :--- | :--- |
+| `GET` | `/privacidade/` | **Dashboard de Privacidade:** Interface de gestão de dados. |
+| `GET` | `/privacidade/consultar/` | Retorno de dados em JSON para transparência total. |
+| `POST` | `/privacidade/reativar/` | Reativação de consentimento após revogação. |
 
 ---
 
@@ -147,5 +193,5 @@ Abaixo estão os modelos de dados para as operações via API.
 **Equipe de Desenvolvimento:**
 &emsp;Anny Gabriely Souza do Nascimento | Antonio Luiz Lins Neto | Fábio Yuuki Saruwataru
 
-**Orientação:** Prof. Dr. Fabiano Bezerra Menegidio
+**Orientação:** Prof. Dr. Fabiano Bezerra Menegidio\
 **Instituição:** UMC - Universidade de Mogi das Cruzes (2026)
