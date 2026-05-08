@@ -1,0 +1,66 @@
+{% extends 'base.html' %} {% block content %}
+<div class="auth-container" style="max-width: 600px">
+  <h2 style="color: var(--accent)">
+    <i class="fas fa-lock"></i> ACESSO SUSPENSO
+  </h2>
+  <p style="font-size: 0.9rem; color: var(--text-dim); margin-bottom: 25px">
+    Você revogou seu consentimento de uso de dados. Para descriptografar e
+    acessar suas senhas, é necessário aceitar os termos de uso e privacidade
+    novamente.
+  </p>
+
+  <div
+    style="
+      background: rgba(0, 0, 0, 0.4);
+      padding: 15px;
+      border: 1px solid var(--border);
+      margin-bottom: 20px;
+      text-align: left;
+      font-size: 0.8rem;
+    "
+  >
+    <label style="display: flex; align-items: center; cursor: pointer">
+      <input type="checkbox" id="check-reativar" style="margin-right: 10px" />
+      Estou ciente e aceito os
+      <a
+        href="{% url 'termos_uso' %}"
+        target="_blank"
+        style="color: var(--accent); margin-left: 5px"
+        >Termos de Privacidade</a
+      >.
+    </label>
+  </div>
+
+  <button
+    onclick="reativarAcesso()"
+    id="btn-reativar"
+    class="btn-primary"
+    disabled
+    style="width: 100%; opacity: 0.5"
+  >
+    REATIVAR MEU COFRE
+  </button>
+</div>
+
+<script>
+  document
+    .getElementById("check-reativar")
+    .addEventListener("change", function () {
+      const btn = document.getElementById("btn-reativar");
+      btn.disabled = !this.checked;
+      btn.style.opacity = this.checked ? "1" : "0.5";
+    });
+
+  async function reativarAcesso() {
+    const res = await fetch("{% url 'aceitar_termos_novamente' %}", {
+      method: "POST",
+      headers: { "X-CSRFToken": "{{ csrf_token }}" },
+    });
+    const data = await res.json();
+    if (res.ok) {
+      alert(data.mensagem);
+      window.location.href = "{% url 'vault_index' %}";
+    }
+  }
+</script>
+{% endblock %}

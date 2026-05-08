@@ -7,6 +7,11 @@ from vault.models import CredencialCofre
 from django.contrib.auth import logout
 from django.views.decorators.csrf import csrf_exempt
 
+
+@login_required
+def privacidade_dashboard(request):
+    return render(request, 'lgpd/privacidade.html')
+
 @csrf_exempt
 @login_required
 def revogar_consentimento(request):
@@ -134,3 +139,20 @@ def excluir_minha_conta(request):
             return JsonResponse({"erro": f"Erro ao processar exclusão: {str(e)}"}, status=500)
             
     return JsonResponse({"erro": "Método não permitido. Utilize POST."}, status=405)
+
+@csrf_exempt
+@login_required
+def aceitar_termos_novamente(request):
+    if request.method == 'POST':
+        try:
+            consentimento = request.user.consentimento
+            consentimento.consentimento_ativo = True
+            consentimento.data_aceite = timezone.now()
+            consentimento.save()
+            
+            return JsonResponse({"mensagem": "Consentimento renovado. Acesso ao cofre liberado!"}, status=200)
+        except Exception as e:
+            return JsonResponse({"erro": str(e)}, status=500)
+    
+    # Se for GET, renderiza uma página simples de "Contrato de Reativação"
+    return render(request, 'lgpd/reativar_termos.html')

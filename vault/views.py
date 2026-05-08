@@ -1,13 +1,15 @@
 import json
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from .models import CredencialCofre
 
 
 @login_required
 def dashboard_view(request):
+    if not request.user.consentimento.consentimento_ativo:
+        return redirect('aceitar_termos_novamente')
     return render(request, 'vault/dashboard.html')
 
 @login_required

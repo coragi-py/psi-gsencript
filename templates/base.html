@@ -45,7 +45,7 @@
         <ul class="nav-links">
           {% if user.is_authenticated %}
           <li><a href="{% url 'vault_index' %}">COFRE</a></li>
-          <li><a href="{% url 'privacidade' %}">PRIVACIDADE</a></li>
+          <li><a href="{% url 'privacidade_dashboard' %}">PRIVACIDADE</a></li>
           <li>
             <!-- O Logout precisa de um formulário porque sua View exige POST -->
             <form

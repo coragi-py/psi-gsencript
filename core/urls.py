@@ -27,5 +27,6 @@ urlpatterns = [
     path('auth/', include('authentication.urls')),
     path('vault/', include('vault.urls')),
     path('lgpd/', include('lgpd.urls')),
-    path('privacidade/', TemplateView.as_view(template_name='privacy_terms.html'), name='privacidade'),
+    path('privacidade/', include('lgpd.urls')),
+    path('termos/', TemplateView.as_view(template_name='privacy_terms.html'), name='termos_uso'),
 ]
