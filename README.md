@@ -6,107 +6,146 @@
 [![Criptografia: AES256](https://img.shields.io/badge/Encryption-AES--256-orange.svg)](https://github.com/coragi-py/psi-gsencript)
 [![Compliance: LGPD](https://img.shields.io/badge/Compliance-LGPD-blue.svg)](https://www.gov.br/esporte/pt-br/acesso-a-informacao/lgpd)
 [![Hashing: Argon2](https://img.shields.io/badge/Hashing-Argon2-red.svg)](https://github.com/coragi-py/psi-gsencript)
-[![Autenticação: MFA-TOTP](https://img.shields.io/badge/MFA-TOTP-yellow.svg)](https://github.com/coragi-py/psi-gsencript)
-
-[![Python 3.14](https://img.shields.io/badge/python-3.14%2B-blue.svg)](https://www.python.org/)
-[![Django 6.0.4](https://img.shields.io/badge/django-6.0.4%2B-092e20.svg)](https://www.djangoproject.com/)
+[![Docker: Ready](https://img.shields.io/badge/Docker-Ready-2496ED.svg)](https://www.docker.com/)
 
 ---
 
-O **GSencript** é um projeto de Engenharia de Software desenvolvido para a disciplina de **Políticas de Segurança da Informação** na **UMC**. O sistema é um cofre de senhas (Vault) focado em criptografia de ponta e conformidade rigorosa com a **LGPD**.
+O **GSencript** é um projeto de Engenharia de Software desenvolvido para a disciplina de **Políticas de Segurança da Informação** na Universidade de Mogi das Cruzes (UMC). O sistema é um cofre de senhas (Vault) de "Conhecimento Zero" (Zero-Knowledge Architecture), conteinerizado e focado em criptografia de ponta e conformidade rigorosa com a **LGPD**.
 
-## 🚀 Novidades da Versão Atual (Integração Frontend):
-* **Fluxo de Cadastro Seguro:** Validação de senha forte em tempo real, confirmação dupla e visualização (toggle eye).
-* **MFA com QR Code:** Geração automática de código TOTP compatível com Google Authenticator e Authy, incluindo botão de cópia segura.
-* **Gate de Conformidade LGPD:** O botão de registro permanece bloqueado até que o usuário abra e aceite os Termos de Privacidade.
-* **Login em Duas Etapas:** Separação visual entre validação de credenciais e inserção do token 2FA.
-* **Recuperação de Senha (Recovery):** Sistema de tokens temporários (10 min) com interface dedicada para reset de senha mestra.
+## 🏗️ Arquitetura do Sistema
+O projeto foi desenhado seguindo padrões modernos de engenharia:
+* **Padrão de Projeto:** MVT (Model-View-Template).
+* **Arquitetura de Software:** Monolito Modularizado (apps isolados para Accounts, Vault, Audit e LGPD).
+* **Infraestrutura:** Microsserviços Conteinerizados (Separação entre App Django e Banco de Dados via Docker).
+* **Segurança:** Arquitetura *Zero-Knowledge* (o servidor armazena apenas dados cifrados, sem acesso às senhas originais).
 
-## 🛡️ Tecnologias e Segurança
-* **Backend:** Django 6.0 / Python 3.14.
-* **Criptografia em Repouso:** AES-256 (Fernet) com chaves derivadas da `SECRET_KEY`.
-* **Hashing de Senha:** Argon2 (padrão Django) para proteção contra ataques de dicionário e brute-force.
-* **Frontend:** Vanilla JavaScript com Fetch API, CSS Moderno (Cyber-Vault Theme) e `qrcodejs` para MFA.
+## 🚀 Novidades da Versão (Branch `docker-postgres`)
+* **Conteinerização com Docker:** Implementação de Dockerfile e Docker Compose para deploy "Run Anywhere".
+* **Persistência com PostgreSQL:** Migração do SQLite para SGBD relacional robusto, isolado em rede interna Docker.
+* **UX/UI Refinada:** Correção de overflow de tokens, visualização de senha mestra e sistema de scrollbar.
+* **Conformidade LGPD:** Página de Termos de Uso e Privacidade integrada com trava de registro e logs de consentimento.
 
-📂 Estrutura do Projeto
-```text
-.
-├── core/                # Configurações globais e Timezone
-├── accounts/            # Gestão de Usuários e Separação de Identidade
-├── authentication/      # Fluxo de Sessão (Login/Logout) e MFA
-├── recovery/            # Gestão de Tokens de Recuperação e Redefinição
-├── vault/               # Cofre Criptografado AES-256 e CRUD de Credenciais
-├── lgpd/                # Gestão de Consentimento e Termos de Uso
-├── templates/           # Interfaces HTML (Base, Vault, Login, Privacy)
-└── static/              # Estilos e Scripts (MFA, Validações)
-```
+## 🛡️ Tecnologias Utilizadas
+* **Backend:** Django 6.0.4 / Python 3.12 (Ambiente Linux Docker).
+* **Banco de Dados:** PostgreSQL 15.
+* **Segurança:** AES-256 (Fernet), Argon2 (Hashing), PyOTP (MFA/TOTP).
+* **Auditoria:** Sistema de logs interno e `django-axes` para prevenção de Brute Force.
+* **Frontend:** Vanilla JS, Fetch API e CSS Moderno.
 
-## ⚙️ Instalação (Windows 10/11)
-1.  **Clone e Entre na Pasta:**
+## ⚙️ Instalação e Execução (Docker - Recomendado)
+O projeto está configurado para subir todo o ambiente (Python + Postgres) com um único comando:
+
+1.  **Clone e Acesse a Branch:**
     ```powershell
-    git clone -b add-frontend https://github.com/coragi-py/psi-gsencript.git
+    git clone -b docker-postgres [https://github.com/coragi-py/psi-gsencript.git](https://github.com/coragi-py/psi-gsencript.git)
     cd psi-gsencript
     ```
-2.  **Ambiente Virtual:**
+2.  **Configure o Ambiente:**
+    * Renomeie o `.env.example` para `.env`.
+    * Defina suas chaves (`SECRET_KEY`, `DB_PASSWORD`, etc).
+3.  **Suba o Container:**
     ```powershell
-    python -m venv venv
-    .\venv\Scripts\activate
-    pip install -r requirements.txt
+    docker-compose up --build -d
     ```
-3.  **Configuração e Migração:**
+4.  **Aplique as Migrações no Banco:**
     ```powershell
-    # Configure o .env com sua SECRET_KEY e ENCRYPTION_KEY
-    python manage.py migrate
-    python manage.py runserver
+    docker-compose exec web python manage.py migrate
+    docker-compose exec web python manage.py createsuperuser
     ```
+Acesse em: `http://localhost:8000`
 
-## 📡 Endpoints Principais (API & Interface)
+---
 
-### Autenticação & Recuperação
+## Mapeamento da API (Rotas para Teste)
+
+### Gestão de Identidade (`/accounts/` & `/auth/`)
 | Método | Endpoint | Descrição |
 | :--- | :--- | :--- |
-| `GET/POST` | `/accounts/registrar/` | Cadastro com geração de QR Code para 2FA. |
-| `GET/POST` | `/auth/login/` | Autenticação em dois passos (Senha + Token). |
-| `GET/POST` | `/recovery/request/` | Solicitação de token de recuperação de conta. |
-| `GET/POST` | `/recovery/reset/` | Redefinição de senha mestra via token válido. |
+| `POST` | `/accounts/registrar/` | Cadastro de usuário com aceite de LGPD e retorno de Segredo 2FA. |
+| `POST` | `/auth/login/` | Autenticação com verificação de credenciais e token TOTP. |
+| `POST` | `/auth/logout/` | Encerramento seguro da sessão. |
 
-### Gestão do Cofre
+### Cofre de Credenciais (`/vault/`)
 | Método | Endpoint | Descrição |
 | :--- | :--- | :--- |
-| `GET` | `/vault/` | Dashboard principal (DashboardView). |
-| `POST` | `/vault/adicionar/` | Criptografia e armazenamento de nova credencial. |
-| `POST` | `/vault/excluir/<id>/` | Remoção protegida contra IDOR. |
+| `POST` | `/vault/adicionar/` | Criptografa (AES-256) e armazena uma nova senha. |
+| `GET` | `/vault/listar/` | Recupera as senhas (decifradas) para o usuário autenticado. |
+| `POST` | `/vault/excluir/<id>/` | Remoção definitiva de uma credencial específica. |
+
+### Direitos do Titular - LGPD (`/lgpd/`)
+| Método | Endpoint | Descrição |
+| :--- | :--- | :--- |
+| `GET` | `/lgpd/exportar/` | **Portabilidade:** Gera JSON com todos os dados pessoais e do cofre. |
+| `POST` | `/lgpd/revogar/` | Revogação de consentimento e bloqueio imediato do acesso. |
+| `POST` | `/lgpd/excluir/` | **Direito ao Esquecimento:** Exclusão total e irreversível da conta. |
 
 ---
 
 ## 📡 Documentação de Payloads (JSON)
 
-### Registrar Usuário
-**POST** `/accounts/registrar/`
+Abaixo estão os modelos de dados para as operações via API.
+
+### 1. Operações de Criação (Create)
+
+**Registrar Novo Usuário**
+* **Endpoint:** `POST /accounts/registrar/`
 ```json
 {
-  "full_name": "Testa da Silva",
-  "username": "teste@exemplo.com",
-  "email": "fabio@exemplo.com",
+  "username": "usuario_exemplo",
+  "email": "exemplo@dominio.com",
   "senha": "SenhaForte@123",
   "consentimento_lgpd": true
 }
 ```
 
-### Resetar Senha
-**POST** `/recovery/reset/`
+**Adicionar Credencial ao Cofre**
+* **Endpoint:** `POST /vault/adicionar/`
 ```json
 {
-  "token": "TOKEN_GERADO_PELO_SISTEMA",
-  "nova_senha": "NovaSenhaForte@2026"
+  "titulo": "Nome do Site/Serviço",
+  "url": "https://www.exemplo.com",
+  "username": "meu_usuario",
+  "senha": "senha_que_sera_criptografada"
 }
 ```
 
+### 2. Operações de Alteração (Alter)
+
+**Redefinição de Senha (Recovery)**
+* **Endpoint:** `POST /recovery/resetar/`
+```json
+{
+  "token": "codigo_recebido_por_email",
+  "nova_senha": "Nova@SenhaForte2026"
+}
+```
+
+**Atualizar Credencial Existente**
+* **Endpoint:** `POST /vault/atualizar/<id>/`
+```json
+{
+  "titulo": "Nome Atualizado",
+  "url": "https://nova-url.com",
+  "username": "novo_usuario",
+  "senha": "nova_senha_criptografada"
+}
+```
+
+### 3. Autenticação e Acesso
+
+**Login com MFA**
+* **Endpoint:** `POST /auth/login/`
+```json
+{
+  "username": "usuario_exemplo",
+  "password": "SenhaForte@123",
+  "token_2fa": "123456"
+}
+```
 ---
 
 **Equipe de Desenvolvimento:**
 &emsp;Anny Gabriely Souza do Nascimento | Antonio Luiz Lins Neto | Fábio Yuuki Saruwataru
 
 **Orientação:** Prof. Dr. Fabiano Bezerra Menegidio
-**Instituição:** UMC - Universidade de Mogi das Cruzes
-```
+**Instituição:** UMC - Universidade de Mogi das Cruzes (2026)
