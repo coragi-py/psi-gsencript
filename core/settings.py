@@ -22,7 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = os.getenv('DEBUG') == 'True'
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'gsencript.local']
 
 # Application definition
 
@@ -131,9 +131,10 @@ SECURE_SSL_REDIRECT = False # Em produção, deve ser True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SESSION_COOKIE_SECURE = False # Em produção, deve ser True
 CSRF_COOKIE_SECURE = False # Em produção, deve ser True
-SECURE_HSTS_SECONDS = 31536000 # Ativa HSTS (1 ano)
-SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-SECURE_HSTS_PRELOAD = True
+# HSTS é uma política de segurança que instrui os navegadores a se comunicarem apenas por HTTPS. O valor é definido para 1 ano (em segundos) para garantir que os navegadores mantenham essa política por um período prolongado.
+SECURE_HSTS_SECONDS = 31536000 # 1 ano em segundos
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True # Incluir subdomínios na política HSTS para garantir que todas as partes do site sejam protegidas
+SECURE_HSTS_PRELOAD = True #
 
 
 # Internationalization
