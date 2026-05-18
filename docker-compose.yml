@@ -9,6 +9,8 @@ services:
       - POSTGRES_PASSWORD=${DB_PASSWORD} # Variável de ambiente para a senha do banco de dados
     networks:
       - internal_network # Conexão com a rede
+    ports:
+      - "5433:5432" # Mapeamento da porta 5432 do container para a porta 5432 do host
 
   web:
     build: . # Construção da imagem a partir do Dockerfile

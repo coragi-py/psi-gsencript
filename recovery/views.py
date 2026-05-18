@@ -23,7 +23,7 @@ def solicitar_recuperacao(request):
         if user:
             # Gera o token e define expiração item 2.3
             user.recovery_token = secrets.token_urlsafe(32)
-            user.token_expiration = timezone.now() + timezone.timedelta(minutes=10)
+            user.token_expiration = timezone.now() + timezone.timedelta(minutes=15)
             user.save()
             
             return JsonResponse({

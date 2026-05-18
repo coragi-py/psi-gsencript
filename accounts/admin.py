@@ -6,7 +6,7 @@ from .models import User
 class MyUserAdmin(UserAdmin):
 
     # Campos a serem exibidos na lista de usuários
-    list_display = ('email', 'first_name', 'last_name', 'is_staff', 'date_joined')
+    list_display = ('email', 'password','first_name', 'last_name', 'is_staff', 'date_joined')
 
     #Ordenação
     ordering = ('email',)
