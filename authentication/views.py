@@ -31,7 +31,7 @@ def login_usuario(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            username = data.get('username')
+            username = data.get('username', '').strip().lower()
             password = data.get('password')
             token_2fa = data.get('token_2fa')
 

@@ -27,8 +27,8 @@ def registrar_usuario(request):
         try:
             data = json.loads(request.body)
             full_name = data.get('full_name', '')
-            email = data.get('email')
-            username = data.get('username')
+            email = data.get('email', '').strip().lower()
+            username = data.get('username').strip().lower()
             senha = data.get('senha')
             consentimento_recebido = data.get('consentimento_lgpd')
 
