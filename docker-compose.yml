@@ -25,6 +25,8 @@ services:
       - db # Garante que o serviço de banco de dados seja iniciado antes do serviço web
     networks:
       - internal_network # Conexão com a rede
+    env_file:
+      - .env # Carrega as variáveis de ambiente do arquivo .env
 
 networks:
   internal_network:

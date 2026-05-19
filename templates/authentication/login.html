@@ -6,7 +6,13 @@
       <div id="step-1">
         <div class="form-group">
           <label>E-MAIL</label>
-          <input type="email" id="email" required autocomplete="username" />
+          <input
+            type="email"
+            id="email"
+            required
+            autocomplete="username"
+            oninput="this.value = this.value.toLowerCase().trim()"
+          />
         </div>
         <div class="form-group">
           <label>SENHA</label>
@@ -49,8 +55,48 @@
       </div>
 
       <div id="step-2" style="display: none">
+        <div
+          class="2fa-selector"
+          style="display: flex; gap: 10px; margin-bottom: 20px"
+        >
+          <button
+            type="button"
+            id="btn-method-app"
+            onclick="set2faMethod('app')"
+            class="btn-full"
+            style="
+              padding: 8px;
+              font-size: 0.75rem;
+              cursor: pointer;
+              border: 1px solid var(--text-dim);
+              background: var(--bg-card);
+              color: #fff;
+              border-radius: 4px;
+            "
+          >
+            <i class="fas fa-mobile-alt"></i> APP AUTH
+          </button>
+          <button
+            type="button"
+            id="btn-method-email"
+            onclick="set2faMethod('email')"
+            class="btn-full"
+            style="
+              padding: 8px;
+              font-size: 0.75rem;
+              cursor: pointer;
+              border: 1px solid transparent;
+              background: none;
+              color: var(--text-dim);
+              border-radius: 4px;
+            "
+          >
+            <i class="fas fa-envelope"></i> VIA E-MAIL
+          </button>
+        </div>
+
         <div class="form-group">
-          <label>CÓDIGO MFA (6 DÍGITOS)</label>
+          <label id="label-mfa">CÓDIGO MFA (APP AUTENTICADOR)</label>
           <input
             type="text"
             id="token_2fa"
@@ -59,6 +105,37 @@
             style="text-align: center; letter-spacing: 8px; font-size: 1.8rem"
           />
         </div>
+
+        <div
+          id="email-cooldown-container"
+          style="display: none; text-align: center; margin-bottom: 15px"
+        >
+          <button
+            type="button"
+            id="btn-reenviar"
+            onclick="solicitarReenvio()"
+            style="
+              background: none;
+              border: none;
+              color: #00bcd4;
+              cursor: pointer;
+              font-size: 0.8rem;
+              text-decoration: underline;
+            "
+          >
+            Reenviar Código por E-mail
+          </button>
+          <p
+            id="mensagem-cooldown"
+            style="
+              font-size: 0.7rem;
+              color: var(--text-dim);
+              margin-top: 5px;
+              min-height: 14px;
+            "
+          ></p>
+        </div>
+
         <button
           type="button"
           id="btn-login"
@@ -67,6 +144,7 @@
         >
           DESBLOQUEAR COFRE
         </button>
+
         <button
           type="button"
           onclick="resetLogin()"
@@ -88,6 +166,10 @@
 </div>
 {% endblock %} {% block scripts %}
 <script>
+  let active2faMethod = "app"; // Controla qual método está ativo ('app' ou 'email')
+  let tempoRestante = 30;
+  let cronometro;
+
   function togglePass(id) {
     const input = document.getElementById(id);
     const icon = input.nextElementSibling.querySelector("i");
@@ -104,9 +186,112 @@
     if (e.key === "Enter") handleStep2();
   });
 
-  // ETAPA 1: Validar apenas Usuário e Senha
+  // GERENCIADOR DE ALTERNÂNCIA ENTRE APP E E-MAIL
+  function set2faMethod(method) {
+    active2faMethod = method;
+    const btnApp = document.getElementById("btn-method-app");
+    const btnEmail = document.getElementById("btn-method-email");
+    const labelMfa = document.getElementById("label-mfa");
+    const cooldownContainer = document.getElementById(
+      "email-cooldown-container",
+    );
+    const tokenInput = document.getElementById("token_2fa");
+
+    tokenInput.value = "";
+    tokenInput.focus();
+
+    if (method === "app") {
+      // Altera estilos visuais dos botões
+      btnApp.style.background = "var(--bg-card)";
+      btnApp.style.borderColor = "var(--text-dim)";
+      btnApp.style.color = "#fff";
+
+      btnEmail.style.background = "none";
+      btnEmail.style.borderColor = "transparent";
+      btnEmail.style.color = "var(--text-dim)";
+
+      labelMfa.innerText = "CÓDIGO MFA (APP AUTENTICADOR)";
+      cooldownContainer.style.display = "none";
+    } else {
+      // Altera estilos para o modo e-mail
+      btnEmail.style.background = "var(--bg-card)";
+      btnEmail.style.borderColor = "var(--text-dim)";
+      btnEmail.style.color = "#fff";
+
+      btnApp.style.background = "none";
+      btnApp.style.borderColor = "transparent";
+      btnApp.style.color = "var(--text-dim)";
+
+      labelMfa.innerText = "CÓDIGO MFA (ENVIADO AO E-MAIL)";
+      cooldownContainer.style.display = "block";
+
+      // Dispara automaticamente o primeiro e-mail caso o cronômetro não esteja rodando
+      if (!cronometro) {
+        solicitarReenvio(true); // true indica que é a primeira chamada silenciosa
+      }
+    }
+  }
+
+  // CONTROLE DO CRONÔMETRO DE REENVIO (30 SEGUNDOS)
+  function iniciarContagem() {
+    const btn = document.getElementById("btn-reenviar");
+    const msg = document.getElementById("mensagem-cooldown");
+
+    btn.style.pointerEvents = "none";
+    btn.style.color = "var(--text-dim)";
+    tempoRestante = 30;
+
+    cronometro = setInterval(() => {
+      tempoRestante--;
+      msg.innerText = `Você poderá solicitar um novo código em ${tempoRestante}s`;
+
+      if (tempoRestante <= 0) {
+        clearInterval(cronometro);
+        cronometro = null;
+        btn.style.pointerEvents = "auto";
+        btn.style.color = "#00bcd4";
+        msg.innerText = "";
+      }
+    }, 1000);
+  }
+
+  // FUNÇÃO PARA SOLICITAR ENVIO/REENVIO VIA BACKEND
+  async function solicitarReenvio(silencioso = false) {
+    const username = document
+      .getElementById("email")
+      .value.trim()
+      .toLowerCase();
+
+    try {
+      // ATENÇÃO: Certifique-se de que a rota 'reenviar_2fa' está mapeada nas suas urls.py
+      const response = await fetch('{% url "reenviar_2fa" %}', {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": "{{ csrf_token }}",
+        },
+        body: JSON.stringify({ username }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        if (!silencioso) alert(data.mensagem || "Um novo código foi enviado!");
+        iniciarContagem();
+      } else {
+        alert("Erro: " + (data.erro || "Não foi possível enviar o código."));
+      }
+    } catch (err) {
+      alert("Erro ao conectar com o servidor para envio de e-mail.");
+    }
+  }
+
+  // ETAPA 1: Validar apenas Usuário e Senha Mestra
   async function handleStep1() {
-    const username = document.getElementById("email").value;
+    const username = document
+      .getElementById("email")
+      .value.trim()
+      .toLowerCase();
     const password = document.getElementById("senha").value;
 
     if (!username || !password) {
@@ -144,9 +329,12 @@
     }
   }
 
-  // ETAPA 2: Finalizar o Login com o Token
+  // ETAPA 2: Finalizar o Login com o Token (Envia o tipo de método escolhido)
   async function handleStep2() {
-    const username = document.getElementById("email").value;
+    const username = document
+      .getElementById("email")
+      .value.trim()
+      .toLowerCase();
     const password = document.getElementById("senha").value;
     const token = document.getElementById("token_2fa").value;
 
@@ -166,7 +354,13 @@
           "Content-Type": "application/json",
           "X-CSRFToken": "{{ csrf_token }}",
         },
-        body: JSON.stringify({ username, password, token_2fa: token }),
+        // Enviamos o tipo_2fa ('app' ou 'email') para sua view tratar adequadamente
+        body: JSON.stringify({
+          username,
+          password,
+          token_2fa: token,
+          tipo_2fa: active2faMethod,
+        }),
       });
 
       const result = await response.json();
@@ -186,9 +380,15 @@
   }
 
   function resetLogin() {
+    if (cronometro) {
+      clearInterval(cronometro);
+      cronometro = null;
+    }
     document.getElementById("step-2").style.display = "none";
     document.getElementById("step-1").style.display = "block";
     document.getElementById("token_2fa").value = "";
+    // Reseta para o padrão App ao retornar
+    set2faMethod("app");
   }
 </script>
 {% endblock %}

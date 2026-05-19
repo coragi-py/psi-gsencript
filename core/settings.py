@@ -136,6 +136,16 @@ SECURE_HSTS_SECONDS = 31536000 # 1 ano em segundos
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True # Incluir subdomínios na política HSTS para garantir que todas as partes do site sejam protegidas
 SECURE_HSTS_PRELOAD = True #
 
+# Configurações de E-mail via SMTP (Brevo)
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp-relay.brevo.com')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
+EMAIL_USE_TLS = True  # Requisito de segurança do Brevo para conexões SMTP
+
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL')
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/

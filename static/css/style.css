@@ -345,7 +345,3 @@ div::-webkit-scrollbar-thumb:hover {
   background: #fff;
   box-shadow: 0 0 10px var(--accent);
 }
-
-input[type="email"] {
-  text-transform: lowercase;
-}
