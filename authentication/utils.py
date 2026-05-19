@@ -45,8 +45,7 @@ def gerar_e_enviar_token_email(user):
     mensagem = f"""
     Olá, {user.username}.
     
-    Alguém está tentando fazer login na sua conta do GSencript.
-    Seu código de verificação em duas etapas é:
+    Seu código de verificação é:
     
     --> {novo_codigo} <--
     
