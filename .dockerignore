@@ -1,0 +1,37 @@
+# .dockerignore - GSencript
+
+# Versionamento e Git
+.git
+.gitignore
+.github
+
+# Ambientes virtuais locais (o Docker vai criar o seu próprio lá dentro)
+venv/
+.venv/
+env/
+
+# Banco de dados local antigo e persistência do Postgres no Host
+*.sqlite3
+db.sqlite3
+postgres_data/
+
+# Gestão de Segredos e Configurações Locais
+.env
+.env.production
+*.local
+
+# Caches do Python e do compilador
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Arquivos temporários do sistema operacional e IDEs
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Arquivos de logs locais
+*.log

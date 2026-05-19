@@ -4,3 +4,5 @@ postgres.data/
 __pycache__/
 *.py[cod]
 .venv/
+*.sqlite3
+*.sqlite3-journal
