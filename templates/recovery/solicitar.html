@@ -1,97 +1,92 @@
 {% extends 'base.html' %} {% block content %}
-<div class="auth-container">
-  <h2>RECUPERAR ACESSO</h2>
-  <p style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 20px">
-    Insira seu e-mail para receber um token de autorização.
-  </p>
-  <form id="form-solicitar">
-    <div class="form-group">
-      <label>E-MAIL CADASTRADO</label>
-      <input type="email" id="email" required />
-    </div>
-    <button type="submit" class="btn-primary btn-full">SOLICITAR TOKEN</button>
-  </form>
-
-  <div
-    id="resultado"
-    style="
-      display: none;
-      margin-top: 20px;
-      border: 1px dashed var(--accent);
-      padding: 15px;
-      background: rgba(0, 0, 0, 0.3);
-    "
-  >
-    <p style="color: var(--accent); font-size: 0.8rem; margin-bottom: 10px">
-      Token gerado (Simulando envio de e-mail):
+<div class="vault-container">
+  <div class="card shadow-lg">
+    <h2 class="text-accent mb-4">RECUPERAR IDENTIDADE</h2>
+    <p class="mb-4 text-muted small">
+      Insira seu e-mail cadastrado. Um link de redefinição de acesso seguro será
+      enviado para sua caixa de entrada.
     </p>
-    <div
-      style="
-        background: #000;
-        padding: 12px;
-        border-radius: 4px;
-        overflow-x: auto;
-        white-space: nowrap;
-        border: 1px solid #333;
-        scrollbar-width: thin; /* Para Firefox */
-        scrollbar-color: var(--accent) #000; /* Para Firefox */
-      "
-    >
-      <code
-        id="token-exibido"
-        style="font-family: var(--font-mono); color: #fff; font-size: 1rem"
-      ></code>
-    </div>
-    <a
-      href="{% url 'resetar_senha' %}"
-      class="btn-primary btn-full"
-      style="display: block; text-decoration: none; margin-top: 15px"
-      >REDEFINIR SENHA</a
-    >
-    <button
-      onclick="copyToken()"
-      style="
-        background: none;
-        border: none;
-        color: var(--text-dim);
-        font-size: 0.7rem;
-        cursor: pointer;
-        margin-top: 5px;
-        display: block;
-        width: 100%;
-        text-align: right;
-      "
-    >
-      <i class="fas fa-copy"></i> COPIAR TOKEN
-    </button>
-  </div>
 
-  <script>
-    document
-      .getElementById("form-solicitar")
-      .addEventListener("submit", async (e) => {
-        e.preventDefault();
+    <form id="form-solicitar">
+      <div class="form-group mb-4">
+        <label for="email">E-mail Cadastrado</label>
+        <input
+          type="email"
+          id="email"
+          required
+          placeholder="seuemail@exemplo.com"
+        />
+      </div>
+
+      <button type="submit" id="btn-submit" class="btn btn-accent w-100">
+        SOLICITAR LINK DE ACESSO
+      </button>
+    </form>
+
+    <div
+      id="feedback-msg"
+      class="mt-4 p-3 bg-dark border-accent text-center"
+      style="display: none; border: 1px solid var(--accent); border-radius: 4px"
+    >
+      <p
+        id="msg-texto"
+        style="
+          color: var(--success);
+          font-family: monospace;
+          font-size: 0.9rem;
+          margin: 0;
+        "
+      ></p>
+    </div>
+  </div>
+</div>
+
+<script>
+  document
+    .getElementById("form-solicitar")
+    .addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const btnSubmit = document.getElementById("btn-submit");
+      const emailVal = document.getElementById("email").value;
+      const feedbackBox = document.getElementById("feedback-msg");
+      const feedbackTexto = document.getElementById("msg-texto");
+
+      // Desabilita o botão para evitar cliques duplicados durante o envio SMTP
+      btnSubmit.disabled = true;
+      btnSubmit.innerText = "ENVIANDO...";
+
+      try {
         const response = await fetch('{% url "solicitar_recuperacao" %}', {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email: document.getElementById("email").value,
-          }),
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token }}",
+          },
+          body: JSON.stringify({ email: emailVal }),
         });
-        const data = await response.json();
+
+        const result = await response.json();
+        feedbackBox.style.display = "block";
+
         if (response.ok) {
-          document.getElementById("form-solicitar").style.display = "none";
-          document.getElementById("resultado").style.display = "block";
-          document.getElementById("token-exibido").innerText = data.token;
+          feedbackTexto.innerText = "✓ " + result.mensagem;
+          feedbackTexto.style.color = "var(--success)";
+          document.getElementById("form-solicitar").reset();
         } else {
-          alert(data.erro);
+          feedbackTexto.innerText = "✗ Erro: " + result.erro;
+          feedbackTexto.style.color = "#ff4d4d";
         }
-      });
-    function copyToken() {
-      const token = document.getElementById("token-exibido").innerText;
-      navigator.clipboard.writeText(token);
-      alert("Token copiado para a área de transferência!");
-    }
-  </script>
-  {% endblock %}
-</div>
+      } catch (err) {
+        feedbackBox.style.display = "block";
+        feedbackTexto.innerText =
+          "✗ Erro de conexão com o servidor de segurança.";
+        feedbackTexto.style.color = "#ff4d4d";
+      } finally {
+        // Restaura o botão após o término da requisição
+        btnSubmit.disabled = false;
+        btnSubmit.innerText = "SOLICITAR LINK DE ACESSO";
+      }
+    });
+</script>
+{% endblock %}

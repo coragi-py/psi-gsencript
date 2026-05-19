@@ -1,57 +1,215 @@
 {% extends 'base.html' %} {% block content %}
-<div class="auth-container">
-  <h2>NOVA SENHA MESTRA</h2>
-  <form id="form-reset">
-    <div class="form-group">
-      <label>TOKEN DE SEGURANÇA</label>
-      <input type="text" id="token" required placeholder="Cole o token aqui" />
-    </div>
-    <div class="form-group">
-      <label>NOVA SENHA</label>
-      <div class="password-wrapper">
-        <input type="password" id="nova_senha" required />
-        <button
-          type="button"
-          class="toggle-password"
-          onclick="togglePass('nova_senha')"
+<div class="vault-container">
+  <div class="card shadow-lg">
+    <h2 class="text-accent mb-4">REDEFINIR SENHA</h2>
+    <p class="mb-4 text-muted small">
+      Crie uma nova senha robusta para reestabelecer o acesso seguro ao seu
+      cofre.
+    </p>
+
+    <form id="form-resetar">
+      <input type="hidden" id="token" value="{{ token }}" />
+
+      <div class="form-group mb-3">
+        <label for="senha">Nova Senha</label>
+        <div
+          class="input-group"
+          style="position: relative; display: flex; align-items: center"
         >
-          <i class="fas fa-eye"></i>
-        </button>
+          <input
+            type="password"
+            id="senha"
+            class="form-control"
+            required
+            placeholder="••••••••"
+            style="padding-right: 60px"
+          />
+          <button
+            type="button"
+            id="toggle-senha"
+            style="
+              position: absolute;
+              right: 15px;
+              background: none;
+              border: none;
+              color: var(--accent);
+              font-family: monospace;
+              font-size: 0.85rem;
+              cursor: pointer;
+              z-index: 10;
+              padding: 0;
+            "
+          >
+            Ver
+          </button>
+        </div>
       </div>
-    </div>
-    <button type="submit" class="btn-primary btn-full">
-      ATUALIZAR PROTOCOLO
-    </button>
-  </form>
+
+      <div class="form-group mb-4">
+        <label for="confirmar_senha">Confirmar Nova Senha</label>
+        <div
+          class="input-group"
+          style="position: relative; display: flex; align-items: center"
+        >
+          <input
+            type="password"
+            id="confirmar_senha"
+            class="form-control"
+            required
+            placeholder="••••••••"
+            style="padding-right: 60px"
+          />
+          <button
+            type="button"
+            id="toggle-confirmar-senha"
+            style="
+              position: absolute;
+              right: 15px;
+              background: none;
+              border: none;
+              color: var(--accent);
+              font-family: monospace;
+              font-size: 0.85rem;
+              cursor: pointer;
+              z-index: 10;
+              padding: 0;
+            "
+          >
+            Ver
+          </button>
+        </div>
+      </div>
+
+      <div
+        id="pass-match-msg"
+        class="small mb-3 text-center"
+        style="display: none; font-family: monospace"
+      ></div>
+
+      <button
+        type="submit"
+        id="btn-submit"
+        class="btn btn-accent w-100 fw-bold"
+        disabled
+        style="opacity: 0.5; cursor: not-allowed; transition: all 0.2s ease"
+      >
+        ATUALIZAR SENHA
+      </button>
+    </form>
+  </div>
 </div>
 
 <script>
-  function togglePass(id) {
-    const input = document.getElementById(id);
-    const icon = input.nextElementSibling.querySelector("i");
-    input.type = input.type === "password" ? "text" : "password";
-    icon.classList.toggle("fa-eye");
-    icon.classList.toggle("fa-eye-slash");
+  const btnSubmit = document.getElementById("btn-submit");
+  const pass = document.getElementById("senha");
+  const confirmPass = document.getElementById("confirmar_senha");
+  const matchMsg = document.getElementById("pass-match-msg");
+
+  // Alternar visibilidade da Senha
+  document
+    .getElementById("toggle-senha")
+    .addEventListener("click", function () {
+      if (pass.type === "password") {
+        pass.type = "text";
+        this.innerText = "Ocultar";
+        this.style.color = "#ffffff";
+      } else {
+        pass.type = "password";
+        this.innerText = "Ver";
+        this.style.color = "var(--accent)";
+      }
+    });
+
+  // Alternar visibilidade do Confirmar Senha
+  document
+    .getElementById("toggle-confirmar-senha")
+    .addEventListener("click", function () {
+      if (confirmPass.type === "password") {
+        confirmPass.type = "text";
+        this.innerText = "Ocultar";
+        this.style.color = "#ffffff";
+      } else {
+        confirmPass.type = "password";
+        this.innerText = "Ver";
+        this.style.color = "var(--accent)";
+      }
+    });
+
+  // Validação dinâmica idêntica à tela anterior
+  function validarForm() {
+    const senhasIguais = pass.value === confirmPass.value && pass.value !== "";
+
+    if (pass.value !== "" && confirmPass.value !== "") {
+      matchMsg.style.display = "block";
+      if (senhasIguais) {
+        matchMsg.innerText = "✓ As senhas coincidem";
+        matchMsg.style.color = "var(--success)";
+      } else {
+        matchMsg.innerText = "✗ As senhas são diferentes";
+        matchMsg.style.color = "#ff4d4d";
+      }
+    } else {
+      matchMsg.style.display = "none";
+    }
+
+    // Altera o estado e o estilo do botão de submit de acordo com o resultado
+    if (senhasIguais) {
+      btnSubmit.disabled = false;
+      btnSubmit.style.opacity = "1";
+      btnSubmit.style.cursor = "pointer";
+    } else {
+      btnSubmit.disabled = true;
+      btnSubmit.style.opacity = "0.5";
+      btnSubmit.style.cursor = "not-allowed";
+    }
   }
 
+  [pass, confirmPass].forEach((el) =>
+    el.addEventListener("input", validarForm),
+  );
+
   document
-    .getElementById("form-reset")
+    .getElementById("form-resetar")
     .addEventListener("submit", async (e) => {
       e.preventDefault();
-      const response = await fetch('{% url "resetar_senha" %}', {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          token: document.getElementById("token").value,
-          nova_senha: document.getElementById("nova_senha").value,
-        }),
-      });
-      if (response.ok) {
-        alert("Senha alterada! Redirecionando para login...");
-        window.location.href = "{% url 'login' %}";
-      } else {
-        const data = await response.json();
-        alert(data.erro);
+
+      btnSubmit.disabled = true;
+      btnSubmit.style.opacity = "0.5";
+      btnSubmit.innerText = "ATUALIZANDO...";
+
+      const dados = {
+        token: document.getElementById("token").value,
+        nova_senha: pass.value,
+      };
+
+      if (!dados.token) {
+        alert("Erro: Token de recuperação ausente ou inválido.");
+        validarForm();
+        return;
+      }
+
+      try {
+        const response = await fetch('{% url "resetar_senha" %}', {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token }}",
+          },
+          body: JSON.stringify(dados),
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          alert("✓ Sucesso: " + result.mensagem);
+          window.location.href = '{% url "login" %}';
+        } else {
+          alert("Erro: " + result.erro);
+          validarForm();
+        }
+      } catch (err) {
+        alert("Erro de conexão com o servidor.");
+        validarForm();
       }
     });
 </script>
