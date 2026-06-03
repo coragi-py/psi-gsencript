@@ -30,15 +30,15 @@ class EmailToken2FA(models.Model):
         self.tentativas += 1
         self.save()
 
-        # 2. Defesa contra Brute Force, limite de 3 tentativas antes de descartar o codigo
-        if self.tentativas > 3:
+        # 2. Defesa contra Brute Force, limite de 5 tentativas antes de descartar o codigo
+        if self.tentativas > 5:
             self.utilizado = True
             self.save()
             return False, "Número máximo de tentativas excedido. Solicite um novo código."
 
         # 3. Valida o código
         if self.codigo != codigo_informado:
-            tentativas_restantes = 3 - self.tentativas
+            tentativas_restantes = 5 - self.tentativas
             return False, f"Código incorreto. Você tem mais {tentativas_restantes} tentativa(s)."
         
         # Sucesso: Descarta o token para uso único

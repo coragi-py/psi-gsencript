@@ -84,7 +84,7 @@ def login_usuario(request):
                 if not ultimo_token:
                     return JsonResponse({"erro": "Nenhum código ativo encontrado. Solicite um reenvio."}, status=400)
                 
-                # Executa o método do Model com validações de expiração (15min) e brute force (3 tentativas)
+                # Executa o método do Model com validações de expiração (15min) e brute force (5 tentativas)
                 valido, msg_erro = ultimo_token.validar_token(token_2fa)
                 if not valido:
                     return JsonResponse({"erro": msg_erro}, status=401)
