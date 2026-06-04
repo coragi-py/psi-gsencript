@@ -179,7 +179,7 @@ Este projeto é disponibilizado primariamente para fins de **pesquisa acadêmica
 
 ***
 
-## 8. Autores e Citação (Authors & Citation)
+## 8. Autores e Citação (Authors)
 
 **Equipe de Engenharia:**
 - Anny Gabriely Souza do Nascimento
