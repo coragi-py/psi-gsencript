@@ -1,4 +1,4 @@
-# GSencript - Gerenciador de Credenciais & Políticas de Segurança
+# GSencript - Zero-Knowledge Credential Vault
 
 [![Universidade: UMC](https://img.shields.io/badge/University-UMC-0D47A1.svg)](https://www.umc.br/)
 [![Matéria: PSI](https://img.shields.io/badge/Subject-Pol%C3%ADticas_de_Seguran%C3%A7a-7B1FA2.svg)](https://github.com/coragi-py/psi-gsencript)
@@ -10,219 +10,184 @@
 
 ---
 
-O **GSencript** é um projeto de Engenharia de Software desenvolvido para a disciplina de **Políticas de Segurança da Informação** na Universidade de Mogi das Cruzes (UMC). O sistema é um cofre de senhas (Vault) de "Conhecimento Zero" (Zero-Knowledge Architecture), conteinerizado e focado em criptografia de ponta e conformidade rigorosa com a **LGPD**.
+## 📑 Índice (Table of Contents)
 
-## 🏗️ Arquitetura do Sistema
+- [1. Visão Geral (Overview)](#1-visão-geral-overview)
+- [2. Principais Funcionalidades (Key Features)](#2-principais-funcionalidades-key-features)
+- [3. Arquitetura do Sistema (System Architecture)](#3-arquitetura-do-sistema-system-architecture)
+- [4. Pré-requisitos (Prerequisites)](#4-pré-requisitos-prerequisites)
+- [5. Instalação e Execução (Installation & Quick Start)](#5-instalação-e-execução-installation--quick-start)
+- [6. Guia de Endpoints e Payloads (API Reference)](#6-guia-de-endpoints-e-payloads-api-reference--usage)
+- [7. Contribuição e Licença (Contributing & License)](#7-contribuição-e-licença-contributing--license)
+- [8. Autores e Citação (Authors & Citation)](#8-autores-e-citação-authors--citation)
 
-O projeto foi desenhado seguindo padrões modernos de engenharia:
+***
 
-- **Padrão de Projeto:** MVT (Model-View-Template).
-- **Arquitetura de Software:** Monolito Modularizado (apps isolados para Accounts, Vault, Audit e LGPD).
-- **Infraestrutura:** Ambiente Conteinerizados (Separação entre App Django e Banco de Dados via Docker).
-- **Segurança:** Arquitetura _Zero-Knowledge_ (o servidor armazena apenas dados cifrados, sem acesso às senhas originais).
+## 1. Visão Geral (Overview)
 
-## 🚀 Novidades da Versão (Versão 1.2)
+O **GSencript** é um sistema gerenciador de credenciais (Vault) construído sob os princípios da **Arquitetura de Conhecimento Zero (Zero-Knowledge Architecture)**. O sistema assegura que o servidor e o provedor de serviço armazenem apenas metadados cifrados, inviabilizando o acesso em texto claro às credenciais originais dos usuários. Desenvolvido com rigor acadêmico e técnico para a disciplina de **Políticas de Segurança da Informação** da Universidade de Mogi das Cruzes (UMC), o projeto consolida práticas de engenharia reversa de segurança, criptografia avançada e conformidade absoluta com os padrões de privacidade da legislação brasileira.
 
-- **Políticas de Identificadores Insensíveis a Maiúsculas (Case-Insensitive):** Correção de vulnerabilidade de duplicidade e fraudes de identidade. Os campos `username` e `email` agora sofrem higienização estrita através de métodos `.strip()` e `.lower()` antes de serem validados ou persistidos.
-- **Preservação de Entropia da Senha:** Garantia de que a higienização de strings _não_ afete a senha (`password`), mantendo-a estritamente _case-sensitive_ para preservar sua entropia máxima e a eficácia do algoritmo Argon2id contra ataques de dicionário.
-- **Serviço de Recuperação com Envio SMTP via Brevo:** Integração do fluxo de redefinição de senha com o gateway de e-mails Brevo, gerenciado de forma segura através de variáveis desacopladas no arquivo `.env`.
-- **Conteinerização com Docker:** Implementação de Dockerfile e Docker Compose para deploy "Run Anywhere".
-- **Persistência com PostgreSQL:** Migração do SQLite para SGBD relacional robusto, isolado em rede interna Docker.
-- **UX/UI Refinada:** Correção de overflow de tokens, visualização de senha mestra e sistema de scrollbar.
-- **Conformidade LGPD:** Página de Termos de Uso e Privacidade integrada com trava de registro e logs de consentimento.
-- **Validação de Login em Duas Etapas:** Separação da validação de credenciais (Password check) do desafio de segundo fator (MFA/TOTP).
-- **Validação de Login via App Autenticador ou e-mail:** Implementado 2FA para métodos de Login via Authenticator ou receber o token via e-mail cadastrado.
-- **Central de Gestão de Privacidade:** Interface visual (Cards) para exercício pleno dos direitos do titular (LGPD Art. 18).
-- **Portão de Reativação de Consentimento:** Sistema de bloqueio automático de processamento de dados em caso de revogação de consentimento.
+***
 
-## 🛡️ Tecnologias Utilizadas
+## 2. Principais Funcionalidades (Key Features)
 
-- **Backend:** Django 6.0.4 / Python 3.12 (Ambiente Linux Docker).
-- **Banco de Dados:** PostgreSQL 15.
-- **Segurança:** AES-256 (Fernet), Argon2id (Hashing), PyOTP (MFA/TOTP).
-- **Auditoria:** Sistema de logs interno e `django-axes` para prevenção de Brute Force.
-- **Frontend:** Vanilla JS, Fetch API e CSS Moderno.
-- O GSencript utiliza Argon2id (vencedor do Password Hashing Competition) para o armazenamento de hashes, configurado para resistir a ataques de canal lateral e força bruta via GPU/ASIC.
+- 🔒 **Criptografia AES-256 (Fernet):** Proteção de dados em repouso. Todas as senhas do cofre são cifradas localmente antes da persistência no banco de dados.
+- 🔑 **Hashing Avançado com Argon2id:** Resistência máxima contra ataques de dicionário e aceleração de hardware (ASICs/GPUs) no armazenamento das senhas mestras.
+- ⚖️ **Conformidade Nativa com a LGPD (Art. 18):** Módulos integrados para portabilidade de dados (exportação JSON estruturada), revogação de consentimento e exclusão irreversível (direito ao esquecimento).
+- 🛡️ **Autenticação em 2 Fatores (MFA/TOTP):** Validação robusta de identidade configurável via aplicativos autenticadores padrão ou envio de token temporário via e-mail (integração SMTP com Brevo).
+- 📜 **Logs de Auditoria (WORM):** Trilha de auditoria inalterável (Write Once, Read Many) que mapeia eventos de ciclo de vida (logins, falhas de autenticação, exclusão de dados) em conformidade com políticas ISO 27001.
 
-## ⚙️ Instalação e Execução (Docker - Recomendado)
+***
 
-O **GSencript** utiliza Docker para garantir que o ambiente de execução seja idêntico em qualquer máquina, isolando o servidor Django e o banco de dados PostgreSQL.
+## 3. Arquitetura do Sistema (System Architecture)
 
-### 1. Pré-requisitos
+O projeto adota o padrão **Monolito Modularizado**, implementado sobre o framework **Django**. A aplicação é dividida em microsserviços lógicos isolados por responsabilidade:
 
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) instalado.
-- Git instalado.
+- `accounts` — Gestão de identidade e ciclo de vida do usuário.
+- `authentication` — Camadas de MFA e controle de sessão segura.
+- `vault` — Cofre criptográfico, lógica de cifragem/decifragem.
+- `lgpd` — Painel de conformidade e gestão de consentimento.
+- `audit` — Repositório WORM e monitoramento de eventos de segurança.
+- `recovery` — Fluxos assíncronos e seguros de recuperação de acesso.
 
-### 2. Clonagem e Configuração
+A segurança no tráfego de entrada é fortificada pelo pacote **django-axes**, implementando barreiras de mitigação (Middlewares) contra ataques de **Força Bruta** e **Denial of Service (DoS)**, impondo limite de taxas (Rate Limiting) e bloqueio temporário de IP após falhas sucessivas.
 
-```powershell
-# Clone o repositório (v1.2 Main)
-git clone [https://github.com/coragi-py/psi-gsencript.git](https://github.com/coragi-py/psi-gsencript.git)
+***
+
+## 4. Pré-requisitos (Prerequisites)
+
+Para provisionar e executar a infraestrutura localmente, os seguintes componentes são necessários no host:
+
+- [Docker Engine](https://docs.docker.com/engine/install/) (v20.10+)
+- [Docker Compose](https://docs.docker.com/compose/install/) (v2.0+)
+- [Git](https://git-scm.com/downloads)
+
+***
+
+## 5. Instalação e Execução (Installation & Quick Start)
+
+O sistema utiliza orquestração conteinerizada para garantir a reprodutibilidade exata do ambiente de produção, isolando a aplicação Python do SGBD PostgreSQL em uma rede virtual interna (bridge).
+
+### 5.1. Clonagem e Configuração do Ambiente
+
+```bash
+# 1. Clone o repositório oficial
+git clone https://github.com/coragi-py/psi-gsencript.git
 cd psi-gsencript
 
-# Configure as variáveis de ambiente
-# Copie o arquivo de exemplo para o arquivo real
+# 2. Configure as variáveis de ambiente
 cp .env.example .env
-
 ```
 
-> **Nota Crítica sobre o `.env`:** Defina suas chaves secretas, senhas do banco de dados e credenciais SMTP da Brevo (`EMAIL_HOST_USER` e `EMAIL_HOST_PASSWORD`). Lembre-se de usar a **Chave SMTP longa** gerada no painel da Brevo e não a senha da sua conta de login.
+> ⚠️ **AVISO CRÍTICO (SMTP BREVO):** Edite o arquivo `.env` inserindo suas chaves de produção. Preste especial atenção às credenciais de e-mail (`EMAIL_HOST_USER` e `EMAIL_HOST_PASSWORD`). Utilize a chave SMTP designada pela Brevo, e **não** a senha de login do painel.
 
-### 3. Build e Inicialização
+### 5.2. Build e Orquestração
 
-Execute o comando abaixo para construir as imagens e subir os containers em segundo plano:
-
-```powershell
+```bash
+# 3. Construa as imagens e levante os contêineres em background
 docker-compose up --build -d
 
+# 4. Verifique o status dos serviços (web e db)
+docker-compose ps
 ```
 
-> **Aviso:** Sempre que alterar o arquivo `.env`, force os containers a ler as novas configurações reiniciando o ecossistema com `docker-compose down` seguido de `docker-compose up -d`.
+### 5.3. Preparação do Banco de Dados
 
-### 4. Preparação do Ambiente e Banco
-
-Agora, execute as migrações para estruturar o PostgreSQL e crie o usuário administrador do sistema:
-
-```powershell
-# Aplica a estrutura do banco (MFA, Vault, LGPD, etc)
+```bash
+# 5. Aplique as migrações estruturais do PostgreSQL
 docker-compose exec web python manage.py migrate
 
-# Cria o superusuário administrador
+# 6. (Opcional) Crie uma conta de superusuário para gestão administrativa
 docker-compose exec web python manage.py createsuperuser
-
 ```
 
-### 5. Manutenção e Comandos Úteis
+Acesse a interface da aplicação através do endpoint exposto: [http://localhost:8000](http://localhost:8000).
 
-- **Acessar o sistema:** `http://localhost:8000` ou `http://127.0.0.1:8000`.
-- **Limpar bloqueios de IP (Axes):** Caso você erre a senha muitas vezes no teste:
-  `docker-compose exec web python manage.py axes_reset`
-- **Ver Logs em tempo real:**
-  `docker-compose logs -f web`
-- **Derrubar os serviços limpando volumes órfãos:**
-  `docker-compose down --volumes`
+***
 
----
+## 6. Guia de Endpoints e Payloads (API Reference / Usage)
 
-## Mapeamento da API (Rotas para Teste)
+Abaixo estão detalhados os principais fluxos de dados e seus respectivos payloads em JSON. As interações com a API pressupõem o envio de requisições sobre **HTTPS** em ambiente de produção.
 
-### Gestão de Identidade (`/accounts/` & `/auth/`)
+### 6.1. Gestão de Identidade e Autenticação
 
-| Método | Endpoint                     | Descrição                                                                                            |
-| ------ | ---------------------------- | ---------------------------------------------------------------------------------------------------- |
-| `POST` | `/accounts/registrar/`       | Cadastro de usuário com aceite de LGPD (inputs higienizados em `.lower()`) e retorno de Segredo 2FA. |
-| `POST` | `/auth/login/`               | Autenticação com verificação de credenciais (identificador limpo por `.lower()`) e token TOTP.       |
-| `POST` | `/auth/logout/`              | Encerramento seguro da sessão.                                                                       |
-| `POST` | `/auth/validar-credenciais/` | **Pre-auth Check:** Valida usuário/senha antes de solicitar o 2FA.                                   |
+**Criar Usuário (Registro com Consentimento LGPD)**
 
-### Cofre de Credenciais (`/vault/`)
+`POST /accounts/registrar/`
 
-| Método | Endpoint               | Descrição                                                   |
-| ------ | ---------------------- | ----------------------------------------------------------- |
-| `POST` | `/vault/adicionar/`    | Criptografa (AES-256) e armazena uma nova senha.            |
-| `GET`  | `/vault/listar/`       | Recupera as senhas (decifradas) para o usuário autenticado. |
-| `POST` | `/vault/excluir/<id>/` | Remoção definitiva de uma credencial específica.            |
-
-### Direitos do Titular - LGPD (`/lgpd/`)
-
-| Método | Endpoint          | Descrição                                                                      |
-| ------ | ----------------- | ------------------------------------------------------------------------------ |
-| `GET`  | `/lgpd/exportar/` | **Portabilidade (Art. 18):** Gera JSON com todos os dados pessoais e do cofre. |
-| `POST` | `/lgpd/revogar/`  | Revogação de consentimento e bloqueio imediato do acesso.                      |
-| `POST` | `/lgpd/excluir/`  | **Direito ao Esquecimento:** Exclusão total e irreversível da conta.           |
-
-### Gestão de Privacidade (`/privacidade/`)
-
-| Método | Endpoint                  | Descrição                                                   |
-| ------ | ------------------------- | ----------------------------------------------------------- |
-| `GET`  | `/privacidade/`           | **Dashboard de Privacidade:** Interface de gestão de dados. |
-| `GET`  | `/privacidade/consultar/` | Retorno de dados em JSON para transparência total.          |
-| `POST` | `/privacidade/reativar/`  | Reativação de consentimento após revogação.                 |
-
----
-
-## 📡 Documentação de Payloads (JSON)
-
-Abaixo estão os modelos de dados para as operações via API.
-
-### 1. Operações de Criação (Create)
-
-**Registrar Novo Usuário**
-
-- **Endpoint:** `POST /accounts/registrar/`
-- _Nota:_ O backend converterá automaticamente o `username` e o `email` para minúsculo antes de validar, prevenindo duplicidades acidentais (Ex: `Usuario_Exemplo` vira `usuario_exemplo`).
+> **Nota:** Os campos de identificação sofrem higienização estrita (case-insensitive) antes da validação.
 
 ```json
 {
-  "username": "usuario_exemplo",
-  "email": "exemplo@dominio.com",
-  "senha": "SenhaForte@123",
+  "full_name": "Alan Turing",
+  "email": "alan@enigma.com",
+  "username": "alan@enigma.com",
+  "senha": "PasswordComplex@2026",
   "consentimento_lgpd": true
 }
 ```
 
-**Adicionar Credencial ao Cofre**
+**Autenticação MFA (App ou Email)**
 
-- **Endpoint:** `POST /vault/adicionar/`
-
-```json
-{
-  "titulo": "Nome do Site/Serviço",
-  "url": "[https://www.exemplo.com](https://www.exemplo.com)",
-  "username": "meu_usuario",
-  "senha": "senha_que_sera_criptografada"
-}
-```
-
-### 2. Operações de Alteração (Alter)
-
-**Redefinição de Senha (Recovery)**
-
-- **Endpoint:** `POST /recovery/resetar/`
+`POST /auth/login/`
 
 ```json
 {
-  "token": "codigo_recebido_por_email",
-  "nova_senha": "Nova@SenhaForte2026"
+  "username": "alan@enigma.com",
+  "password": "PasswordComplex@2026",
+  "token_2fa": "123456",
+  "tipo_2fa": "app"
 }
 ```
 
-**Atualizar Credencial Existente**
+### 6.2. Cofre de Credenciais (Vault)
 
-- **Endpoint:** `POST /vault/atualizar/<id>/`
+**Adicionar Nova Credencial Cifrada**
+
+`POST /vault/adicionar/`
+
+> **Nota:** O servidor recebe o payload em texto plano, porém, a persistência na coluna `senha_site_cifrada` ocorre estritamente no formato ciphertext utilizando a chave mestra AES-256.
 
 ```json
 {
-  "titulo": "Nome Atualizado",
-  "url": "[https://nova-url.com](https://nova-url.com)",
-  "username": "novo_usuario",
-  "senha": "nova_senha_criptografada"
+  "titulo": "Acesso Bancário",
+  "url": "https://banco.exemplo.com",
+  "username": "alan.turing",
+  "senha": "MySuperSecretBankPassword123"
 }
 ```
 
-### 3. Autenticação e Acesso
+### 6.3. Privacidade e Conformidade (LGPD)
 
-**Login com MFA**
+- **Portabilidade de Dados** `GET /lgpd/exportar/` — Retorna um binário de download em formato JSON (Header `Content-Disposition: attachment`) contendo todos os dados do titular e o cofre de senhas cifrado.
+- **Revogação** `POST /lgpd/revogar/` — Suspende a capacidade de processamento do software para a referida conta (Art. 8, § 5º da LGPD).
+- **Esquecimento** `POST /lgpd/excluir/` — Encerra a sessão atual e executa exclusão permanente (CASCADE) no banco de dados.
 
-- **Endpoint:** `POST /auth/login/`
+***
 
-```json
-{
-  "username": "usuario_exemplo",
-  "password": "SenhaForte@123",
-  "token_2fa": "123456"
-}
-```
+## 7. Contribuição e Licença (Contributing & License)
 
----
+Contribuições para o aprimoramento criptográfico, otimizações arquiteturais ou melhorias de documentação são bem-vindas através de Pull Requests (PRs).
 
-**Equipe de Desenvolvimento:**
- Anny Gabriely Souza do Nascimento | Antonio Luiz Lins Neto | Fábio Yuuki Saruwataru
+1. Realize o **Fork** do projeto.
+2. Crie uma **Branch** para sua Feature (`git checkout -b feature/AmazingFeature`).
+3. Submeta um **Commit** com suas mudanças (`git commit -m 'Add: AmazingFeature'`).
+4. Realize o **Push** para a respectiva Branch (`git push origin feature/AmazingFeature`).
+5. Abra um **Pull Request** detalhando as alterações e justificativas técnicas.
 
-**Orientação:** Prof. Dr. Fabiano Bezerra Menegidio
+Este projeto é disponibilizado primariamente para fins de **pesquisa acadêmica e uso não comercial**.
 
-**Instituição:** UMC - Universidade de Mogi das Cruzes (2026)
+***
 
-```
+## 8. Autores e Citação (Authors & Citation)
 
-```
+**Equipe de Engenharia:**
+- Anny Gabriely Souza do Nascimento
+- Antonio Luiz Lins Neto
+- Fábio Yuuki Saruwataru
+
+**Supervisão Técnica:**
+- Prof. Dr. Fabiano Bezerra Menegidio
+
+**Instituição:**
+- UMC - Universidade de Mogi das Cruzes (2026)
